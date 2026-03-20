@@ -2,44 +2,47 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import cookieParser from "cookie-parser";            // ✅ NEW
+import cookieParser from "cookie-parser";
 import { body, validationResult } from "express-validator";
 
-import authRoutes from "./routes/authRoutes.js";
-import Contact from "./models/Contact.js";
-import Signup from "./models/Signup.js";
+import authRoutes    from "./routes/authRoutes.js";
+import adminRoutes   from "./routes/adminRoutes.js";
+import patientRoutes from "./routes/patientRoutes.js";
+import doctorRoutes  from "./routes/doctorRoutes.js";
+import Contact       from "./models/Contact.js";
+import Signup        from "./models/Signup.js";
 
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const app      = express();
+const PORT     = process.env.PORT || 5000;
 const MONGO_URL = process.env.MONGO_URL || "mongodb://localhost:27017/telemed";
 
-/* ─────────────────────────────────────────────────
+/* ─────────────────────────────────────────
    MIDDLEWARES
-───────────────────────────────────────────────── */
+───────────────────────────────────────── */
 app.use(cors({
   origin: [
-    "http://localhost:5173",   // doctor / admin frontend
-    "http://localhost:5174",   // patient frontend
+    "http://localhost:5173",  // doctor / admin frontend
+    "http://localhost:5174",  // patient user panel
   ],
-  credentials: true,           // ✅ Required for cookies to work cross-origin
+  credentials: true,          // required for cookies
 }));
 
 app.use(express.json());
-app.use(cookieParser());                             // ✅ Parse cookies from every request
-app.use("/uploads", express.static("uploads"));     // Serve uploaded files
+app.use(cookieParser());
+app.use("/uploads", express.static("uploads")); // serve uploaded files
 
-/* ─────────────────────────────────────────────────
+/* ─────────────────────────────────────────
    HEALTH CHECK
-───────────────────────────────────────────────── */
+───────────────────────────────────────── */
 app.get("/health", (req, res) => {
   res.json({ ok: true, dbState: mongoose.connection.readyState });
 });
 
-/* ─────────────────────────────────────────────────
-   CONTACT FORM API
-───────────────────────────────────────────────── */
+/* ─────────────────────────────────────────
+   CONTACT FORM
+───────────────────────────────────────── */
 app.post(
   "/api/contact",
   [
@@ -64,14 +67,15 @@ app.post(
   }
 );
 
-/* ─────────────────────────────────────────────────
-   AUTH ROUTES
-───────────────────────────────────────────────── */
-app.use("/api/auth", authRoutes);
+/* ─────────────────────────────────────────
+   ROUTES
+───────────────────────────────────────── */
+app.use("/api/auth",    authRoutes);
+app.use("/api/admin",   adminRoutes);
+app.use("/api/patient", patientRoutes);
+app.use("/api/doctor",  doctorRoutes);
 
-/* ─────────────────────────────────────────────────
-   ALL USERS (quick admin view)
-───────────────────────────────────────────────── */
+/* ALL USERS – quick admin helper */
 app.get("/api/users", async (req, res) => {
   try {
     const users = await Signup.find();
@@ -82,9 +86,9 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-/* ─────────────────────────────────────────────────
-   CONNECT DB & START SERVER
-───────────────────────────────────────────────── */
+/* ─────────────────────────────────────────
+   CONNECT DB & START
+───────────────────────────────────────── */
 mongoose
   .connect(MONGO_URL)
   .then(() => {

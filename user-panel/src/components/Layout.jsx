@@ -1,142 +1,241 @@
 import React, { useState } from "react";
 import {
-  Home,
-  Activity,
-  Calendar,
-  Video,
-  FileText,
-  FileCheck,
-  MessageSquare,
-  Settings as SettingsIcon,
-  LogOut,
-  Heart,
-  Menu,
-  X,
-  User,
+  LayoutDashboard, Activity, CalendarPlus, Video,
+  FolderHeart, ClipboardList, MessageCircle,
+  Settings, LogOut, Stethoscope, Menu, X,
+  Bell, Search, ChevronDown,
 } from "lucide-react";
 
-const menuItems = [
-  { id: "dashboard", label: "Dashboard",          icon: Home          },
-  { id: "symptoms",  label: "Symptom Checker",    icon: Activity      },
-  { id: "appointments", label: "Book Appointment",icon: Calendar      },
-  { id: "video",     label: "Video Consultation", icon: Video         },
-  { id: "records",   label: "Medical Records",    icon: FileText      },
-  { id: "prescriptions", label: "Prescriptions",  icon: FileCheck     },
-  { id: "messages",  label: "Messages",           icon: MessageSquare },
-  { id: "settings",  label: "Settings",           icon: SettingsIcon  },
+const NAV_TOP = [
+  { id:"dashboard",    label:"Profile",         icon:LayoutDashboard, badge:null },
+  { id:"appointments", label:"Appointment",     icon:CalendarPlus,    badge:10   },
+  { id:"records",      label:"Doctors",         icon:FolderHeart,     badge:null },
+  { id:"video",        label:"Schedule",        icon:Video,           badge:null },
+  { id:"messages",     label:"Messages",        icon:MessageCircle,   badge:null },
+  { id:"prescriptions",label:"Suppliments",     icon:ClipboardList,   badge:null },
+];
+const NAV_BOTTOM = [
+  { id:"symptoms",  label:"Symptom Check", icon:Activity  },
+  { id:"settings",  label:"Settings",      icon:Settings  },
 ];
 
-export default function Layout({ children, currentScreen, navigateTo, patientName }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+export default function Layout({ children, screen, go, name, onLogout }) {
+  const [open, setOpen] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      await fetch("http://localhost:5000/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (err) {
-      console.error("Logout error:", err);
-    }
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    window.location.href = "http://localhost:5173/login";
+  const isActive = id => screen === id || (screen==="recordDetails"&&id==="records");
+
+  const NavItem = ({ id, label, icon:Icon, badge }) => {
+    const active = isActive(id);
+    return (
+      <button onClick={() => { go(id); setOpen(false); }}
+        style={{
+          display:"flex", alignItems:"center", gap:14,
+          padding:"11px 16px", borderRadius:10, width:"100%",
+          border:"none", cursor:"pointer", textAlign:"left",
+          fontFamily:"'Plus Jakarta Sans',sans-serif",
+          fontSize:14, fontWeight: active ? 600 : 400,
+          background: active ? "rgba(20,184,166,0.18)" : "transparent",
+          color: active ? "#14B8A6" : "rgba(255,255,255,0.55)",
+          transition:"all 0.15s ease", marginBottom:2,
+          position:"relative",
+        }}
+        onMouseEnter={e=>{ if(!active){ e.currentTarget.style.background="rgba(255,255,255,0.06)"; e.currentTarget.style.color="rgba(255,255,255,0.85)"; }}}
+        onMouseLeave={e=>{ if(!active){ e.currentTarget.style.background="transparent"; e.currentTarget.style.color="rgba(255,255,255,0.55)"; }}}
+      >
+        {/* Active indicator */}
+        {active && (
+          <span style={{
+            position:"absolute", left:0, top:"50%", transform:"translateY(-50%)",
+            width:3, height:20, background:"#14B8A6", borderRadius:"0 3px 3px 0",
+          }}/>
+        )}
+        <div style={{
+          width:34, height:34, borderRadius:9, display:"flex",
+          alignItems:"center", justifyContent:"center", flexShrink:0,
+          background: active ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.05)",
+        }}>
+          <Icon size={17} />
+        </div>
+        <span style={{ flex:1 }}>{label}</span>
+        {badge && (
+          <span style={{
+            background:"#14B8A6", color:"white", fontSize:10,
+            fontWeight:700, padding:"2px 7px", borderRadius:10, minWidth:20, textAlign:"center",
+          }}>{badge}</span>
+        )}
+      </button>
+    );
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex">
+  const initials = name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase() || "P";
 
-      {/* ── Mobile toggle button ── */}
-      <button
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-emerald-500 text-white rounded-lg shadow-lg"
-      >
-        {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-      </button>
+  const SidebarContent = () => (
+    <div style={{
+      width:240, background:"#111827", height:"100%",
+      display:"flex", flexDirection:"column",
+      borderRight:"1px solid rgba(255,255,255,0.06)",
+    }}>
+      {/* Logo */}
+      <div style={{
+        padding:"22px 20px 18px", borderBottom:"1px solid rgba(255,255,255,0.07)",
+        display:"flex", alignItems:"center", gap:12,
+      }}>
+        <div style={{
+          width:36, height:36, background:"linear-gradient(135deg,#14B8A6,#0D9488)",
+          borderRadius:10, display:"flex", alignItems:"center",
+          justifyContent:"center", flexShrink:0,
+          boxShadow:"0 4px 12px rgba(20,184,166,0.35)",
+        }}>
+          <Stethoscope size={18} color="white" />
+        </div>
+        <span style={{ color:"white", fontSize:18, fontWeight:800, letterSpacing:"-0.3px", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>MediCare</span>
+      </div>
 
-      {/* ── Mobile overlay ── */}
-      {mobileOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
+      {/* Main nav */}
+      <div style={{ flex:1, padding:"16px 12px", overflowY:"auto" }}>
+        <p style={{ fontSize:10, fontWeight:700, letterSpacing:"1px", textTransform:"uppercase", color:"rgba(255,255,255,0.2)", padding:"0 6px", marginBottom:10 }}>Main Menu</p>
+        {NAV_TOP.map(item => <NavItem key={item.id} {...item} />)}
+      </div>
 
-      {/* ══════════════════════════════════════
-          SIDEBAR
-      ══════════════════════════════════════ */}
-      <aside
-        className={`w-64 bg-white min-h-screen flex flex-col fixed left-0 top-0 bottom-0
-          border-r border-gray-200 z-40 transition-transform duration-300
-          ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
-      >
-        {/* Logo */}
-        <div className="p-5 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow">
-              <Heart className="w-6 h-6 text-white" fill="currentColor" />
-            </div>
-            <div>
-              <h2 className="text-gray-800 font-semibold text-sm">MediCare</h2>
-              <p className="text-gray-400 text-xs">Patient Portal</p>
-            </div>
-          </div>
+      {/* Upgrade card */}
+      <div style={{ padding:"12px 16px" }}>
+        <div style={{
+          background:"linear-gradient(135deg,rgba(20,184,166,0.2),rgba(13,148,136,0.3))",
+          border:"1px solid rgba(20,184,166,0.25)", borderRadius:14,
+          padding:"16px", marginBottom:12,
+        }}>
+          <div style={{ fontSize:22, marginBottom:6 }}>🚀</div>
+          <p style={{ color:"rgba(255,255,255,0.6)", fontSize:11, marginBottom:2, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>You're on the Free plan.</p>
+          <p style={{ color:"white", fontSize:12, fontWeight:700, fontFamily:"'Plus Jakarta Sans',sans-serif", marginBottom:12 }}>Upgrade to Go Pro</p>
+          <button onClick={() => go("appointments")} style={{
+            width:"100%", padding:"8px", borderRadius:8,
+            background:"linear-gradient(135deg,#14B8A6,#0D9488)",
+            border:"none", color:"white", fontSize:12, fontWeight:700,
+            cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif",
+            boxShadow:"0 3px 10px rgba(20,184,166,0.4)",
+          }}>Book Appointment</button>
         </div>
 
-        {/* Patient name in sidebar */}
-        <div className="p-5 border-b border-gray-100">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-gray-800 font-medium text-sm">
-                {patientName || "Loading..."}
-              </p>
-              <p className="text-gray-400 text-xs">Patient</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Nav items */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {menuItems.map(({ id, label, icon: Icon }) => {
-            const isActive = currentScreen === id ||
-              (currentScreen === "recordDetails" && id === "records");
-            return (
-              <button
-                key={id}
-                onClick={() => { navigateTo(id); setMobileOpen(false); }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg
-                  transition-all text-sm
-                  ${isActive
-                    ? "bg-emerald-50 text-emerald-600 border-l-4 border-emerald-500 font-medium"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                  }`}
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                <span>{label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Logout */}
-        <div className="p-4 border-t border-gray-100">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-500
-              hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors text-sm"
+        {/* Bottom nav */}
+        <div style={{ borderTop:"1px solid rgba(255,255,255,0.07)", paddingTop:10 }}>
+          {NAV_BOTTOM.map(item => <NavItem key={item.id} {...item} />)}
+          <button onClick={onLogout}
+            style={{
+              display:"flex", alignItems:"center", gap:14,
+              padding:"11px 16px", borderRadius:10, width:"100%",
+              border:"none", cursor:"pointer", textAlign:"left",
+              fontFamily:"'Plus Jakarta Sans',sans-serif",
+              fontSize:14, fontWeight:400, background:"transparent",
+              color:"rgba(255,255,255,0.4)", transition:"all 0.15s ease",
+            }}
+            onMouseEnter={e=>{ e.currentTarget.style.background="rgba(239,68,68,0.1)"; e.currentTarget.style.color="#FCA5A5"; }}
+            onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.color="rgba(255,255,255,0.4)"; }}
           >
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
+            <div style={{ width:34, height:34, borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(255,255,255,0.05)" }}>
+              <LogOut size={17} />
+            </div>
+            Log Out
           </button>
         </div>
-      </aside>
+      </div>
+    </div>
+  );
 
-      {/* ── Main content area ── */}
-      <div className="flex-1 lg:ml-64">
-        {children}
+  return (
+    <div style={{ display:"flex", height:"100vh", overflow:"hidden", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
+
+      {/* Desktop sidebar */}
+      <div style={{ flexShrink:0 }} className="hidden lg:block">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div onClick={()=>setOpen(false)} style={{
+          position:"fixed", inset:0, background:"rgba(0,0,0,0.6)",
+          zIndex:40, backdropFilter:"blur(3px)",
+        }} className="lg:hidden" />
+      )}
+
+      {/* Mobile sidebar */}
+      <div style={{
+        position:"fixed", top:0, left:0, bottom:0, zIndex:50,
+        transform: open ? "translateX(0)" : "translateX(-100%)",
+        transition:"transform 0.25s cubic-bezier(0.4,0,0.2,1)",
+      }} className="lg:hidden">
+        <SidebarContent />
+      </div>
+
+      {/* Main area */}
+      <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:"#F0F4F8" }}>
+
+        {/* Top header bar */}
+        <div style={{
+          background:"white", borderBottom:"1px solid #E8EDF2",
+          padding:"0 24px", height:64,
+          display:"flex", alignItems:"center", justifyContent:"space-between",
+          flexShrink:0, zIndex:20, boxShadow:"0 1px 3px rgba(0,0,0,0.04)",
+        }}>
+          {/* Left: hamburger + greeting */}
+          <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+            <button onClick={()=>setOpen(!open)} className="lg:hidden" style={{
+              width:36, height:36, borderRadius:8, border:"1.5px solid #E2E8F0",
+              background:"white", cursor:"pointer",
+              display:"flex", alignItems:"center", justifyContent:"center",
+            }}>
+              {open ? <X size={18} color="#475569"/> : <Menu size={18} color="#475569"/>}
+            </button>
+            <div className="hidden sm:block">
+              <p style={{ fontSize:18, fontWeight:700, color:"#0F172A", lineHeight:1.2 }}>
+                Hello, {name.split(" ")[0]} 👋
+              </p>
+              <p style={{ fontSize:12, color:"#94A3B8", marginTop:1 }}>Detailed information about your health</p>
+            </div>
+          </div>
+
+          {/* Right: search + bell + avatar */}
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            {/* Search */}
+            <div style={{ position:"relative" }} className="hidden md:flex">
+              <Search size={15} color="#94A3B8" style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)" }} />
+              <input placeholder="Search anything…" style={{
+                paddingLeft:36, paddingRight:16, height:38, width:220,
+                border:"1.5px solid #E8EDF2", borderRadius:10, fontSize:13,
+                fontFamily:"'Plus Jakarta Sans',sans-serif", color:"#0F172A",
+                background:"#F8FAFC", outline:"none",
+              }} onFocus={e=>{e.target.style.borderColor="#14B8A6";e.target.style.background="white";}}
+                 onBlur={e=>{e.target.style.borderColor="#E8EDF2";e.target.style.background="#F8FAFC";}} />
+            </div>
+
+            {/* Notifications */}
+            <button style={{
+              width:38, height:38, borderRadius:10, border:"1.5px solid #E8EDF2",
+              background:"white", cursor:"pointer",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              position:"relative",
+            }}>
+              <Bell size={17} color="#475569" />
+              <span style={{ position:"absolute", top:8, right:8, width:7, height:7, background:"#EF4444", borderRadius:"50%", border:"2px solid white" }} />
+            </button>
+
+            {/* Avatar */}
+            <div style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+              <div style={{
+                width:38, height:38, borderRadius:10,
+                background:"linear-gradient(135deg,#14B8A6,#0D9488)",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                fontSize:13, fontWeight:700, color:"white",
+                boxShadow:"0 2px 8px rgba(20,184,166,0.3)",
+              }}>{initials}</div>
+              <ChevronDown size={14} color="#94A3B8" className="hidden sm:block" />
+            </div>
+          </div>
+        </div>
+
+        {/* Scrollable content */}
+        <div style={{ flex:1, overflowY:"auto", padding:"0" }}>
+          {children}
+        </div>
       </div>
     </div>
   );

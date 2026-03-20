@@ -1,175 +1,418 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Globe, User, Bell, Shield, Lock, LogOut, Save, Camera } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  Globe, User, Bell, Shield, Lock,
+  LogOut, Save, Camera, Loader2, CheckCircle,
+} from "lucide-react";
+import { getPatientProfile, updatePatientProfile } from "../services/api";
 
-export function Settings({ navigateTo, onLogout }) {
-  const [language, setLanguage] = useState('english');
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [smsNotifications, setSmsNotifications] = useState(false);
+export function Settings({ navigateTo, patientName, onNameUpdate, onLogout }) {
+  const [form, setForm] = useState({
+    name:                 "",
+    phone:                "",
+    dob:                  "",
+    gender:               "",
+    bloodGroup:           "",
+    height:               "",
+    weight:               "",
+    hasChronicDisease:    false,
+    chronicDiseaseDetail: "",
+    emergencyContactName:  "",
+    emergencyContactPhone: "",
+  });
+
+  const [language,          setLanguage]          = useState("english");
+  const [emailNotifs,       setEmailNotifs]       = useState(true);
+  const [pushNotifs,        setPushNotifs]        = useState(true);
+  const [smsNotifs,         setSmsNotifs]         = useState(false);
+  const [loading,           setLoading]           = useState(true);
+  const [saving,            setSaving]            = useState(false);
+  const [saveSuccess,       setSaveSuccess]       = useState(false);
+  const [error,             setError]             = useState(null);
+
+  /* ── Load profile on mount ── */
+  useEffect(() => {
+    const load = async () => {
+      const data = await getPatientProfile();
+      if (data?.patient) {
+        const p = data.patient;
+        setForm({
+          name:                 p.name  || "",
+          phone:                p.phone || "",
+          dob:                  p.dob ? p.dob.split("T")[0] : "",
+          gender:               p.gender || "",
+          bloodGroup:           p.bloodGroup || "",
+          height:               p.height ?? "",
+          weight:               p.weight ?? "",
+          hasChronicDisease:    p.hasChronicDisease ?? false,
+          chronicDiseaseDetail: p.chronicDiseaseDetail || "",
+          emergencyContactName:  p.emergencyContact?.name  || "",
+          emergencyContactPhone: p.emergencyContact?.phone || "",
+        });
+      }
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    setSaveSuccess(false);
+    try {
+      const result = await updatePatientProfile({
+        name:                 form.name,
+        phone:                form.phone,
+        dob:                  form.dob || null,
+        gender:               form.gender || null,
+        bloodGroup:           form.bloodGroup || null,
+        height:               form.height ? Number(form.height) : null,
+        weight:               form.weight ? Number(form.weight) : null,
+        hasChronicDisease:    form.hasChronicDisease,
+        chronicDiseaseDetail: form.chronicDiseaseDetail || null,
+        emergencyContact: {
+          name:  form.emergencyContactName  || null,
+          phone: form.emergencyContactPhone || null,
+        },
+      });
+
+      if (result?.patient) {
+        setSaveSuccess(true);
+        if (onNameUpdate && form.name) onNameUpdate(form.name);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        setError(result?.message || "Failed to save. Please try again.");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleLogout = () => {
-    if (confirm('Are you sure you want to logout?')) {
+    if (confirm("Are you sure you want to logout?")) {
       onLogout();
     }
   };
 
-  const handleSaveSettings = () => {
-    alert('Settings saved successfully!');
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
+
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-gray-800 text-lg sm:text-xl lg:text-2xl">Settings</h1>
-            <p className="text-gray-500 text-sm sm:text-base">Manage your account and preferences</p>
+            <h1 className="text-gray-800 text-xl font-semibold">Settings</h1>
+            <p className="text-gray-500 text-sm">Manage your account and preferences</p>
           </div>
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
-              <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <User className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
-            </button>
-          </div>
+          <button className="p-2 hover:bg-gray-100 rounded-lg relative">
+            <Bell className="w-5 h-5 text-gray-600" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          </button>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
-        <div className="space-y-6">
-          {/* Profile Settings */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="max-w-3xl mx-auto space-y-6">
+
+          {/* Success / Error banners */}
+          {saveSuccess && (
+            <div className="flex items-center space-x-2 bg-green-50 border border-green-200 rounded-lg p-3 text-green-700">
+              <CheckCircle className="w-5 h-5" />
+              <span>Profile saved successfully!</span>
+            </div>
+          )}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* ── Profile Section ── */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center space-x-2 mb-6">
               <User className="w-5 h-5 text-blue-600" />
-              <h2 className="text-gray-800">Profile Settings</h2>
+              <h2 className="text-gray-800 font-semibold">Profile Information</h2>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center">
-                  <User className="w-10 h-10 text-white" />
-                </div>
-                <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  <Camera className="w-4 h-4" />
-                  <span>Change Photo</span>
-                </button>
+
+            {/* Avatar */}
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center">
+                <User className="w-10 h-10 text-emerald-600" />
+              </div>
+              <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                <Camera className="w-4 h-4" />
+                <span>Change Photo</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Name */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">Full Name</label>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                />
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">Phone Number</label>
+                <input
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                />
+              </div>
+
+              {/* Date of Birth */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">Date of Birth</label>
+                <input
+                  type="date"
+                  name="dob"
+                  value={form.dob}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                />
+              </div>
+
+              {/* Gender */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">Gender</label>
+                <select
+                  name="gender"
+                  value={form.gender}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                >
+                  <option value="">Select</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
+
+              {/* Blood Group */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">Blood Group</label>
+                <select
+                  name="bloodGroup"
+                  value={form.bloodGroup}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                >
+                  <option value="">Select</option>
+                  {["A+","A−","B+","B−","AB+","AB−","O+","O−"].map((bg) => (
+                    <option key={bg} value={bg}>{bg}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Height */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">Height (cm)</label>
+                <input
+                  type="number"
+                  name="height"
+                  value={form.height}
+                  onChange={handleChange}
+                  placeholder="e.g. 170"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                />
+              </div>
+
+              {/* Weight */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">Weight (kg)</label>
+                <input
+                  type="number"
+                  name="weight"
+                  value={form.weight}
+                  onChange={handleChange}
+                  placeholder="e.g. 65"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Chronic disease toggle */}
+            <div className="mt-4">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="hasChronicDisease"
+                  checked={form.hasChronicDisease}
+                  onChange={handleChange}
+                  className="w-4 h-4 accent-emerald-500"
+                />
+                <span className="text-gray-700 text-sm">I have a chronic disease</span>
+              </label>
+              {form.hasChronicDisease && (
+                <textarea
+                  name="chronicDiseaseDetail"
+                  value={form.chronicDiseaseDetail}
+                  onChange={handleChange}
+                  placeholder="Please describe your chronic condition..."
+                  rows={2}
+                  className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm resize-none"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* ── Emergency Contact ── */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <Shield className="w-5 h-5 text-red-500" />
+              <h2 className="text-gray-800 font-semibold">Emergency Contact</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">Contact Name</label>
+                <input
+                  name="emergencyContactName"
+                  value={form.emergencyContactName}
+                  onChange={handleChange}
+                  placeholder="e.g. Jane Doe"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                />
               </div>
               <div>
-                <label className="block text-gray-700 mb-2">Full Name</label>
-                <input type="text" defaultValue="John Smith" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-2">Email Address</label>
-                <input type="email" defaultValue="john.smith@email.com" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-2">Phone Number</label>
-                <input type="tel" defaultValue="+1 (555) 123-4567" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-2">Date of Birth</label>
-                <input type="date" defaultValue="1990-01-15" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="block text-gray-700 text-sm font-medium mb-1">Contact Phone</label>
+                <input
+                  name="emergencyContactPhone"
+                  value={form.emergencyContactPhone}
+                  onChange={handleChange}
+                  placeholder="+91 98765 43210"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                />
               </div>
             </div>
           </div>
 
-          {/* Language Settings */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center space-x-2 mb-6">
+          {/* ── Language ── */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center space-x-2 mb-4">
               <Globe className="w-5 h-5 text-green-600" />
-              <h2 className="text-gray-800">Language Preferences</h2>
+              <h2 className="text-gray-800 font-semibold">Language</h2>
             </div>
-            <div>
-              <label className="block text-gray-700 mb-2">Select Language</label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="english">English</option>
-                <option value="hindi">Hindi (हिंदी)</option>
-                <option value="punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
-                <option value="spanish">Spanish (Español)</option>
-                <option value="french">French (Français)</option>
-              </select>
-              <p className="text-gray-500 mt-2">Changes will take effect after saving</p>
-            </div>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+            >
+              <option value="english">English</option>
+              <option value="hindi">Hindi (हिंदी)</option>
+              <option value="marathi">Marathi (मराठी)</option>
+              <option value="punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+              <option value="spanish">Spanish</option>
+              <option value="french">French</option>
+            </select>
           </div>
 
-          {/* Notification Settings */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center space-x-2 mb-6">
+          {/* ── Notifications ── */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center space-x-2 mb-4">
               <Bell className="w-5 h-5 text-purple-600" />
-              <h2 className="text-gray-800">Notification Settings</h2>
+              <h2 className="text-gray-800 font-semibold">Notifications</h2>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {[
-                { label: 'Email Notifications', desc: 'Receive appointment reminders via email', value: emailNotifications, setter: setEmailNotifications },
-                { label: 'Push Notifications', desc: 'Receive notifications in your browser', value: pushNotifications, setter: setPushNotifications },
-                { label: 'SMS Notifications', desc: 'Receive text messages for urgent updates', value: smsNotifications, setter: setSmsNotifications },
-              ].map(({ label, desc, value, setter }) => (
-                <div key={label} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                { label: "Email Notifications",  desc: "Appointment reminders via email", val: emailNotifs,  set: setEmailNotifs  },
+                { label: "Push Notifications",   desc: "Browser push notifications",      val: pushNotifs,   set: setPushNotifs   },
+                { label: "SMS Notifications",    desc: "SMS for urgent updates",           val: smsNotifs,    set: setSmsNotifs    },
+              ].map(({ label, desc, val, set }) => (
+                <div key={label} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="text-gray-800">{label}</p>
-                    <p className="text-gray-500">{desc}</p>
+                    <p className="text-gray-800 text-sm">{label}</p>
+                    <p className="text-gray-500 text-xs">{desc}</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={value}
-                      onChange={(e) => setter(e.target.checked)}
+                      checked={val}
+                      onChange={(e) => set(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-emerald-500
+                      after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                      after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
+                      peer-checked:after:translate-x-full" />
                   </label>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Security Settings */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center space-x-2 mb-6">
-              <Shield className="w-5 h-5 text-red-600" />
-              <h2 className="text-gray-800">Security & Privacy</h2>
+          {/* ── Security ── */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <Shield className="w-5 h-5 text-orange-500" />
+              <h2 className="text-gray-800 font-semibold">Security</h2>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {[
-                { icon: Lock, label: 'Change Password' },
-                { icon: Shield, label: 'Two-Factor Authentication' },
-                { icon: Lock, label: 'Privacy Settings' },
+                { icon: Lock,   label: "Change Password" },
+                { icon: Shield, label: "Two-Factor Authentication" },
               ].map(({ icon: Icon, label }) => (
-                <button key={label} className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <button key={label} className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
                   <div className="flex items-center space-x-3">
-                    <Icon className="w-5 h-5 text-gray-600" />
-                    <span className="text-gray-800">{label}</span>
+                    <Icon className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-700 text-sm">{label}</span>
                   </div>
-                  <ArrowLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                  <span className="text-gray-400 text-sm">›</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex space-x-4">
+          {/* ── Action Buttons ── */}
+          <div className="flex space-x-4 pb-8">
             <button
-              onClick={handleSaveSettings}
-              className="flex-1 flex items-center justify-center space-x-2 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1 flex items-center justify-center space-x-2 bg-emerald-500 text-white py-3 rounded-xl hover:bg-emerald-600 transition-colors disabled:opacity-60"
             >
-              <Save className="w-5 h-5" />
-              <span>Save Changes</span>
+              {saving ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  <span>Save Changes</span>
+                </>
+              )}
             </button>
             <button
               onClick={handleLogout}
-              className="flex-1 flex items-center justify-center space-x-2 bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 transition-colors"
+              className="flex-1 flex items-center justify-center space-x-2 bg-red-500 text-white py-3 rounded-xl hover:bg-red-600 transition-colors"
             >
               <LogOut className="w-5 h-5" />
               <span>Logout</span>
             </button>
           </div>
+
         </div>
       </main>
     </div>
