@@ -63,6 +63,7 @@ const doctorSchema = new mongoose.Schema(
     identityProof: { type: String, required: true },
 
     isVerified: { type: Boolean, default: false },
+    rejectionReason: { type: String, default: "" },
   },
   { timestamps: true }
 );
