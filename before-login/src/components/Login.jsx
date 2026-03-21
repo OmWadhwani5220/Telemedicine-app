@@ -58,10 +58,14 @@ export default function Login() {
           window.location.href = redirectURL;
         }, 100);
       } else if (data.user.role === "doctor") {
-        navigate("/doctor-dashboard");
+        setTimeout(() => {
+          const redirectURL = `http://localhost:5175/?token=${data.token}&name=${encodeURIComponent(data.user.name)}&role=${data.user.role}`;
+          console.log("🚀 Redirecting to:", redirectURL); // debug
+          window.location.href = redirectURL;
+        }, 100);
       } else if (data.user.role === "admin") {
         setTimeout(() => {
-          const redirectURL = `http://localhost:5174/?token=${data.token}&name=${encodeURIComponent(data.user.name)}&role=${data.user.role}`;
+          const redirectURL = `http://localhost:5176/?token=${data.token}&name=${encodeURIComponent(data.user.name)}&role=${data.user.role}`;
           console.log("🚀 Redirecting to:", redirectURL); // debug
           window.location.href = redirectURL;
         }, 100);

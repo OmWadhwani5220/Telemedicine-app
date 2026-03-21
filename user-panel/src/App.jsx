@@ -1,137 +1,224 @@
-import React, { useState, useEffect } from "react";
-import Layout                         from "./components/Layout";
-import Dashboard                      from "./components/Dashboard";
-import { AppointmentBooking }         from "./components/AppointmentBooking";
-import { MedicalRecords }             from "./components/MedicalRecords";
-import { RecordDetails }              from "./components/RecordDetails";
-import { Prescriptions }              from "./components/Prescriptions";
-import { Messages }                   from "./components/Messages";
-import { SymptomChecker }             from "./components/SymptomChecker";
-import { VideoConsultation }          from "./components/VideoConsultation";
-import { Settings }                   from "./components/Settings";
-import { getAuthProfile, logoutUser } from "./services/api";
-import { ShieldOff, Heart }           from "lucide-react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
+import Layout    from "./components/Layout";
+import Dashboard from "./components/Dashboard";
 
-/* ── Unauthorized wall shown when no token ─────────────────────────── */
-function UnauthorizedPage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 sm:p-12 max-w-md w-full text-center">
-        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <ShieldOff className="w-10 h-10 text-red-500" />
+// ✅ Lazy load all screens
+const SymptomChecker     = lazy(() => import("./components/SymptomChecker"));
+const AppointmentBooking = lazy(() => import("./components/AppointmentBooking"));
+const VideoConsultation  = lazy(() => import("./components/VideoConsultation"));
+const MedicalRecords     = lazy(() => import("./components/MedicalRecords"));
+const RecordDetails      = lazy(() => import("./components/RecordDetails"));
+const Prescriptions      = lazy(() => import("./components/Prescriptions"));
+const Messages           = lazy(() => import("./components/Messages"));
+const Settings           = lazy(() => import("./components/Settings"));
+
+// ✅ Loading spinner for lazy screens
+const ScreenLoader = () => (
+  <div style={{
+    flex:1, display:"flex", alignItems:"center",
+    justifyContent:"center", minHeight:"60vh",
+  }}>
+    <div style={{
+      width:36, height:36,
+      border:"3px solid #10B981",
+      borderTopColor:"transparent",
+      borderRadius:"50%",
+      animation:"spin 0.8s linear infinite",
+    }} />
+    <style>{`@keyframes spin { to { transform:rotate(360deg); } }`}</style>
+  </div>
+);
+
+// ✅ Error boundary — shows "Coming Soon" if component crashes
+class ScreenErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError:false }; }
+  static getDerivedStateFromError() { return { hasError:true }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          flex:1, display:"flex", flexDirection:"column",
+          alignItems:"center", justifyContent:"center",
+          minHeight:"80vh", gap:16,
+        }}>
+          <div style={{
+            width:72, height:72, borderRadius:20,
+            background:"linear-gradient(135deg,#10B981,#059669)",
+            display:"flex", alignItems:"center",
+            justifyContent:"center", fontSize:32,
+            boxShadow:"0 8px 24px rgba(16,185,129,0.3)",
+          }}>🚧</div>
+          <h2 style={{ color:"#0F172A", fontSize:22, fontWeight:700, margin:0 }}>
+            Coming Soon
+          </h2>
+          <p style={{ color:"#94A3B8", fontSize:14, margin:0 }}>
+            This page is under construction
+          </p>
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Access Denied</h1>
-        <p className="text-gray-500 mb-8 text-sm leading-relaxed">
-          You must be logged in to access the Patient Portal. Please sign in to continue.
-        </p>
-        <a
-          href="http://localhost:5173/login"
-          className="inline-flex items-center justify-center gap-2 w-full bg-emerald-500 hover:bg-emerald-600
-            text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
-        >
-          <Heart className="w-5 h-5" />
-          Go to Login
-        </a>
-      </div>
-    </div>
-  );
+      );
+    }
+    return this.props.children;
+  }
 }
 
-/* ── Full-screen loading spinner ───────────────────────────────────── */
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-14 h-14 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-emerald-600 font-medium text-sm tracking-wide">Loading your dashboard…</p>
-      </div>
-    </div>
-  );
-}
+// ✅ Login URL — port 5173
+const LOGIN_URL = "http://localhost:5173/login";
 
-/* ── Main App ──────────────────────────────────────────────────────── */
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState("dashboard");
-  const [screenData,    setScreenData]    = useState(null);
-  const [patientName,   setPatientName]   = useState("");
-  const [authStatus,    setAuthStatus]    = useState("checking"); // checking | ok | denied
+  const [currentScreen,  setCurrentScreen]  = useState("dashboard");
+  const [patientName,    setPatientName]    = useState("Patient");
+  const [ready,          setReady]          = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   useEffect(() => {
-    const token     = localStorage.getItem("token");
-    const savedName = localStorage.getItem("name");
+    const timer = setTimeout(() => {
+      const token     = localStorage.getItem("token");
+      const savedName = localStorage.getItem("name");
+      const role      = localStorage.getItem("role");
 
-    /* No token at all → show wall immediately */
-    if (!token) {
-      setAuthStatus("denied");
-      return;
-    }
+      console.log("📦 Token:", token ? "EXISTS ✅" : "MISSING ❌");
+      console.log("📦 Name:", savedName);
+      console.log("📦 Role:", role);
 
-    /* Token exists – show UI right away with saved name */
-    setPatientName(decodeURIComponent(savedName || "Patient"));
-    setAuthStatus("ok");
+      // ❌ No token → go to login
+      if (!token) {
+        window.location.href = LOGIN_URL;
+        return;
+      }
 
-    /* Background verify – only kick out on real 401 */
-    getAuthProfile().then((data) => {
-      if (!data) return;
-      const name = data?.user?.name || savedName || "Patient";
-      setPatientName(name);
-      localStorage.setItem("name", name);
-    }).catch(() => {/* network error – stay logged in */});
+      // ✅ Show app immediately with saved name
+      setPatientName(decodeURIComponent(savedName || "Patient"));
+      setReady(true);
+
+      // ✅ Background verify with backend
+      fetch("http://localhost:5000/api/auth/profile", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      })
+        .then((res) => {
+          if (res.status === 401) {
+            localStorage.clear();
+            window.location.href = LOGIN_URL;
+            return null;
+          }
+          if (!res.ok) return null;
+          return res.json();
+        })
+        .then((data) => {
+          if (!data) return;
+          const name = data?.user?.name || data?.name || savedName || "Patient";
+          setPatientName(name);
+          localStorage.setItem("name", name);
+        })
+        .catch(() => {
+          console.warn("⚠️ Network error — keeping user logged in");
+        });
+
+    }, 150);
+
+    return () => clearTimeout(timer);
   }, []);
 
-  const navigateTo = (screen, data = null) => {
-    setCurrentScreen(screen);
-    setScreenData(data);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
+  // ✅ Logout handler
   const handleLogout = async () => {
-    await logoutUser();
-    setAuthStatus("denied");
+    try {
+      await fetch("http://localhost:5000/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) { console.warn(e); }
+    localStorage.clear();
+    window.location.href = LOGIN_URL;
   };
 
-  const handleNameUpdate = (name) => {
-    setPatientName(name);
-    localStorage.setItem("name", name);
+  // ✅ Navigation handler
+  const handleNavigate = (screen, data = null) => {
+    console.log("🧭 Navigating to:", screen);
+    if (data?.selectedRecord) setSelectedRecord(data.selectedRecord);
+    setCurrentScreen(screen);
+    window.scrollTo(0, 0);
   };
 
-  if (authStatus === "checking") return <LoadingScreen />;
-  if (authStatus === "denied")   return <UnauthorizedPage />;
+  // ── App loading spinner ──
+  if (!ready) {
+    return (
+      <div style={{
+        minHeight:"100vh", display:"flex", flexDirection:"column",
+        alignItems:"center", justifyContent:"center", background:"#0F172A",
+      }}>
+        <div style={{
+          width:44, height:44,
+          border:"4px solid #10B981",
+          borderTopColor:"transparent",
+          borderRadius:"50%",
+          animation:"spin 0.8s linear infinite",
+          marginBottom:16,
+        }} />
+        <p style={{ color:"#94a3b8", fontSize:14, margin:0 }}>Loading...</p>
+        <style>{`@keyframes spin { to { transform:rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
+  // ── Screen renderer ──
   const renderScreen = () => {
+    const commonProps = {
+      navigateTo: handleNavigate,
+      patientName,
+    };
+
+    const wrapScreen = (Component, extraProps = {}) => (
+      <ScreenErrorBoundary>
+        <Suspense fallback={<ScreenLoader />}>
+          <Component {...commonProps} {...extraProps} />
+        </Suspense>
+      </ScreenErrorBoundary>
+    );
+
     switch (currentScreen) {
       case "dashboard":
-        return <Dashboard patientName={patientName} navigateTo={navigateTo} />;
+        return <Dashboard {...commonProps} />;
+
       case "symptoms":
-        return <SymptomChecker navigateTo={navigateTo} />;
+        return wrapScreen(SymptomChecker);
+
       case "appointments":
-        return <AppointmentBooking navigateTo={navigateTo} />;
+        return wrapScreen(AppointmentBooking);
+
       case "video":
-        return <VideoConsultation navigateTo={navigateTo} />;
+        return wrapScreen(VideoConsultation);
+
       case "records":
-        return <MedicalRecords navigateTo={navigateTo} />;
+        return wrapScreen(MedicalRecords);
+
       case "recordDetails":
-        return <RecordDetails record={screenData?.selectedRecord} navigateTo={navigateTo} />;
+        return wrapScreen(RecordDetails, { record: selectedRecord });
+
       case "prescriptions":
-        return <Prescriptions navigateTo={navigateTo} />;
+        return wrapScreen(Prescriptions);
+
       case "messages":
-        return <Messages navigateTo={navigateTo} />;
+        return wrapScreen(Messages);
+
       case "settings":
-        return (
-          <Settings
-            navigateTo={navigateTo}
-            patientName={patientName}
-            onNameUpdate={handleNameUpdate}
-            onLogout={handleLogout}
-          />
-        );
+        return wrapScreen(Settings, { onLogout: handleLogout });
+
       default:
-        return <Dashboard patientName={patientName} navigateTo={navigateTo} />;
+        return <Dashboard {...commonProps} />;
     }
   };
 
   return (
-    <Layout currentScreen={currentScreen} navigateTo={navigateTo} patientName={patientName} onLogout={handleLogout}>
+    <Layout
+      currentScreen={currentScreen}
+      navigateTo={handleNavigate}
+      patientName={patientName}
+      onLogout={handleLogout}
+    >
       {renderScreen()}
     </Layout>
   );

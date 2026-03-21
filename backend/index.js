@@ -23,8 +23,10 @@ const MONGO_URL = process.env.MONGO_URL || "mongodb://localhost:27017/telemed";
 ───────────────────────────────────────── */
 app.use(cors({
   origin: [
-    "http://localhost:5173",  // doctor / admin frontend
-    "http://localhost:5174",  // patient user panel
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",,  // patient user panel
   ],
   credentials: true,          // required for cookies
 }));
@@ -101,3 +103,4 @@ mongoose
     console.error("MongoDB connection error:", err);
     process.exit(1);
   });
+  console.log("JWT_SECRET loaded:", process.env.JWT_SECRET ? "✅ YES" : "❌ NO - CHECK .env FILE");

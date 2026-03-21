@@ -85,7 +85,7 @@ export default function Dashboard() {
 
             {/* Charts Section */}
             <div className="charts-container">
-                <div className="chart-card pie-chart-card">
+                <div className="chart-card pie-chart-card"> 
                     <h3>Doctor Specializations</h3>
                     {stats.specializationStats.length > 0 ? (
                         <div className="chart-wrapper">
