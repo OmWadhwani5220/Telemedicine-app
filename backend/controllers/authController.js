@@ -102,7 +102,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    if (user.role === "doctor" && !user.verified) {
+    if (user.role === "doctor" && !user.isVerified) {
       return res.status(403).json({ message: "Your account is not verified yet." });
     }
 
