@@ -7,14 +7,16 @@ const ExternalRedirect = ({ to }) => {
   return null;
 };
 
-const AdminRoute = () => {
+const AdminRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   const role  = localStorage.getItem("role");
 
   console.log("🔐 AdminRoute → token:", token ? "exists" : "MISSING");
   console.log("🔐 AdminRoute → role:", role);
 
-  if (token && role === "admin") return <Outlet />;
+  if (token && role === "admin") {
+    return children; // ✅ THIS IS THE FIX
+  }
 
   return <ExternalRedirect to="http://localhost:5173/login" />;
 };
@@ -70,9 +72,14 @@ const AppRoutes = () => {
             : <ExternalRedirect to="http://localhost:5173/login" />
         }
       />
-      <Route element={<AdminRoute />}>
-        <Route path="/admin/*" element={<AdminRoutes />} />
-      </Route>
+      <Route
+  path="/admin/*"
+  element={
+    <AdminRoute>
+      <AdminRoutes />
+    </AdminRoute>
+  }
+/>
       <Route
         path="*"
         element={<ExternalRedirect to="http://localhost:5173/login" />}

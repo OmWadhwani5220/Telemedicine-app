@@ -68,6 +68,7 @@ const [loading, setLoading] = useState(true);
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
+         
         },
       }
     );
@@ -85,7 +86,9 @@ const [loading, setLoading] = useState(true);
      DISAPPROVE
   =============================== */
   const handleDisapprove = async (id) => {
+  console.log("Reject ID:", id);
   const reason = prompt("Enter rejection reason:");
+   
   if (!reason) return;
 
   try {
@@ -223,39 +226,57 @@ return (
                   </td>
                   <td>{doctor.rejectionReason || "-"}</td>
 
-                  <td className="actions">
-                    <button
-                      className="btn view"
-                      onClick={() => setSelectedDoctor(doctor)}
-                    >
-                      View
-                    </button>
+                <td className="actions">
+  {/* VIEW */}
+  <button
+    className="btn view"
+    onClick={() => setSelectedDoctor(doctor)}
+  >
+    View
+  </button>
 
-                    {!doctor.isVerified && (
-                      <>
-                        <button
-                          className="btn approve"
-                          onClick={() => handleApprove(doctor._id)}
-                        >
-                          Approve
-                        </button>
+  {/* ✅ PENDING */}
+  {!doctor.isVerified && !doctor.rejectionReason && (
+    <>
+      <button
+        className="btn approve"
+        onClick={() => handleApprove(doctor._id)}
+      >
+        Approve
+      </button>
 
-                        <button
-                          className="btn reject"
-                          onClick={() => handleDisapprove(doctor._id)}
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
+      <button
+        className="btn disapprove"
+        onClick={() => handleDisapprove(doctor._id)}
+      >
+        Disapprove
+      </button>
+    </>
+  )}
 
-                    <button
-                      className="btn delete"
-                      onClick={() => handleDelete(doctor._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+  {/* ✅ APPROVED */}
+  {doctor.isVerified && (
+    <span className="status approved">Approved</span>
+  )}
+
+  {/* ✅ REJECTED */}
+  {!doctor.isVerified && doctor.rejectionReason && (
+    <button
+      className="btn approve"
+      onClick={() => handleApprove(doctor._id)}
+    >
+      Approve
+    </button>
+  )}
+
+  {/* DELETE ALWAYS */}
+  <button
+    className="btn delete"
+    onClick={() => handleDelete(doctor._id)}
+  >
+    Delete
+  </button>
+</td>
                 </tr>
               ))
             )}

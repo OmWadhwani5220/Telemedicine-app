@@ -3,89 +3,50 @@ import Patient from "../models/Patient.js";
 import Signup from "../models/Signup.js";
 import sendEmail from "../utils/sendEmail.js";
 
-
-
+/* ================= DASHBOARD ================= */
 export const getDashboardStats = async (req, res) => {
   try {
     const totalPatients = await Patient.countDocuments();
     const totalDoctors = await Doctor.countDocuments({ isVerified: true });
     const pendingApprovals = await Doctor.countDocuments({ isVerified: false });
 
-    const specializationData = await Doctor.aggregate([
-      { $match: { isVerified: true } },
-      {
-        $group: {
-          _id: "$specialization",
-          count: { $sum: 1 }
-        }
-      }
-    ]);
-
-    const specializationStats = specializationData.map(item => ({
-      name: item._id || "Not Specified",
-      value: item.count
-    }));
-
-    const registrationData = await Signup.aggregate([
-      {
-        $group: {
-          _id: { $month: "$createdAt" },
-          patients: {
-            $sum: { $cond: [{ $eq: ["$role", "patient"] }, 1, 0] }
-          },
-          doctors: {
-            $sum: { $cond: [{ $eq: ["$role", "doctor"] }, 1, 0] }
-          }
-        }
-      },
-      { $sort: { "_id": 1 } }
-    ]);
-
-    const registrationStats = registrationData.map(item => ({
-      name: `Month ${item._id}`,
-      patients: item.patients,
-      doctors: item.doctors
-    }));
-
-    res.json({
+    res.status(200).json({
       totalPatients,
       totalDoctors,
       pendingApprovals,
-      specializationStats,
-      registrationStats
     });
-
-  } catch (err) {
-    console.error("Dashboard Error:", err);
+  } catch (error) {
+    console.error("Dashboard Error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
+/* ================= USERS ================= */
 export const getAllUsers = async (req, res) => {
   try {
     const patients = await Patient.find()
-      .select("name email createdAt")  // ✅ only required fields
-      .sort({ createdAt: -1 });  // ✅ newest first
+      .select("name email createdAt")
+      .sort({ createdAt: -1 });
 
     res.status(200).json(patients);
   } catch (error) {
-    console.error("Error fetching patients:", error);
+    console.error("Users Error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
-
-/* GET ALL DOCTORS */
+/* ================= DOCTORS ================= */
 export const getAllDoctors = async (req, res) => {
   try {
-    const doctors = await Doctor.find();
+    const doctors = await Doctor.find().sort({ createdAt: -1 });
     res.status(200).json(doctors);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Doctors Error:", error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
-/* APPROVE DOCTOR */
+/* ================= APPROVE DOCTOR ================= */
 export const approveDoctor = async (req, res) => {
   try {
     const { doctorId } = req.params;
@@ -96,28 +57,39 @@ export const approveDoctor = async (req, res) => {
         isVerified: true,
         rejectionReason: "",
       },
-      { returnDocument: "after" }
+      { new: true }
     );
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
-    // ✅ SEND EMAIL
-    await sendEmail({
-  email: doctor.email,  // ✅ NOT "to"
-  subject: "Telemed Account Approved ✅",
-  message: `Hello ${doctor.name},
+    // ✅ UPDATE USER TABLE
+    await Signup.findByIdAndUpdate(doctor.userId, {
+      isVerified: true,
+    });
+
+    // ✅ EMAIL (SAFE)
+    try {
+      await sendEmail({
+        email: doctor.email,
+        subject: "Telemed Account Approved ✅",
+        message: `Hello ${doctor.name},
 
 Your profile has been approved.
 
-You can now login to Telemed.
+You can now login.
 
-Thank you!
-Telemed Team`
-});
+Telemed Team`,
+      });
+    } catch (e) {
+      console.error("Email error:", e.message);
+    }
 
-    return res.status(200).json(doctor);
+    return res.status(200).json({
+      message: "Doctor approved successfully",
+      doctor,
+    });
 
   } catch (error) {
     console.error("Approve Error:", error);
@@ -125,8 +97,7 @@ Telemed Team`
   }
 };
 
-/* REJECT DOCTOR */
-
+/* ================= REJECT DOCTOR ================= */
 export const rejectDoctor = async (req, res) => {
   try {
     const { doctorId } = req.params;
@@ -142,28 +113,39 @@ export const rejectDoctor = async (req, res) => {
         isVerified: false,
         rejectionReason: reason,
       },
-      { returnDocument: "after" }
+      { new: true }
     );
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
-    // ✅ SEND EMAIL WITH REASON
-    await sendEmail({
-  email: doctor.email,  // ✅ NOT "to"
-  subject: "Telemed Profile Rejected ❌",
-  message: `Hello ${doctor.name},
+    // ✅ UPDATE USER TABLE
+    await Signup.findByIdAndUpdate(doctor.userId, {
+      isVerified: false,
+    });
+
+    // ✅ EMAIL
+    try {
+      await sendEmail({
+        email: doctor.email,
+        subject: "Telemed Profile Rejected ❌",
+        message: `Hello ${doctor.name},
 
 Your profile has been rejected.
 
 Reason: ${reason}
 
-Please update your details and try again.
+Please update and try again.`,
+      });
+    } catch (e) {
+      console.error("Email error:", e.message);
+    }
 
-Telemed Team`
-});
-    return res.status(200).json(doctor);
+    return res.status(200).json({
+      message: "Doctor rejected successfully",
+      doctor,
+    });
 
   } catch (error) {
     console.error("Reject Error:", error);
@@ -171,7 +153,7 @@ Telemed Team`
   }
 };
 
-/* DELETE DOCTOR */
+/* ================= DELETE DOCTOR ================= */
 export const deleteDoctor = async (req, res) => {
   try {
     const { doctorId } = req.params;
@@ -182,7 +164,12 @@ export const deleteDoctor = async (req, res) => {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
-    return res.status(200).json({ message: "Doctor deleted" });
+    // ✅ DELETE USER ALSO
+    await Signup.findByIdAndDelete(doctor.userId);
+
+    return res.status(200).json({
+      message: "Doctor and user deleted successfully",
+    });
 
   } catch (error) {
     console.error("Delete Error:", error);
