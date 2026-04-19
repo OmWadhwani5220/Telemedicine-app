@@ -1,16 +1,17 @@
-import { getCookie } from "../utils/cookies";
 import { useEffect } from "react";
 
 const AdminProtected = ({ children }) => {
-  const role = getCookie("role");
+  
+  const token = localStorage.getItem("token");
+  const role  = localStorage.getItem("role");
 
   useEffect(() => {
-    if (!role || role !== "admin") {
-      window.location.href = "http://localhost:5174/login";
+    if (!token || role !== "admin") {
+      window.location.href = "http://localhost:5173/login";
     }
-  }, [role]);
+  }, [token, role]);
 
-  if (!role || role !== "admin") return null;
+  if (!token || role !== "admin") return null;
 
   return children;
 };
