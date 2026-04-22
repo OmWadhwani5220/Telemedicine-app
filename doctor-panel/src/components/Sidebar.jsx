@@ -1,3 +1,6 @@
+// ─── doctor-panel/src/components/Sidebar.jsx  (UPDATED) ────────────────────────
+// Changes: Added Video Call menu item
+
 import { NavLink } from "react-router-dom";
 import {
   Calendar,
@@ -7,23 +10,23 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  Video,   // ✅ NEW
 } from "lucide-react";
 
 export default function Sidebar({ doctor, isExpanded, setIsExpanded }) {
   const menuItems = [
-    { name: "Appointments", icon: Calendar, path: "/appointments" },
-    { name: "Notifications", icon: Bell, path: "/notifications" },
-    { name: "Patients", icon: Users, path: "/patients" },
-    { name: "Prescription Upload", icon: FilePlus, path: "/prescriptions" },
-    { name: "Settings", icon: Settings, path: "/settings" },
+    { name: "Appointments",       icon: Calendar, path: "/appointments" },
+    { name: "Video Call",         icon: Video,    path: "/video-call" },   // ✅ NEW
+    { name: "Notifications",      icon: Bell,     path: "/notifications" },
+    { name: "Patients",           icon: Users,    path: "/patients" },
+    { name: "Prescription Upload",icon: FilePlus, path: "/prescriptions" },
+    { name: "Settings",           icon: Settings, path: "/settings" },
   ];
 
   const getInitials = (name) => {
     if (!name) return "";
     const words = name.split(" ");
-    return words.length > 1
-      ? words[0][0] + words[1][0]
-      : words[0][0];
+    return words.length > 1 ? words[0][0] + words[1][0] : words[0][0];
   };
 
   return (
@@ -75,13 +78,9 @@ export default function Sidebar({ doctor, isExpanded, setIsExpanded }) {
                   }`
                 }
               >
-                {/* Bold Icons */}
                 <Icon size={24} strokeWidth={2.8} />
-
                 {isExpanded && (
-                  <span className="whitespace-nowrap font-medium">
-                    {item.name}
-                  </span>
+                  <span className="whitespace-nowrap font-medium">{item.name}</span>
                 )}
               </NavLink>
             );
@@ -121,13 +120,10 @@ export default function Sidebar({ doctor, isExpanded, setIsExpanded }) {
           <div className="w-10 h-10 rounded-full bg-white text-teal-600 flex items-center justify-center font-semibold">
             {getInitials(doctor?.name)}
           </div>
-
           {isExpanded && (
             <div>
               <p className="text-sm font-medium">{doctor?.name}</p>
-              <p className="text-xs opacity-80">
-                {doctor?.specialization}
-              </p>
+              <p className="text-xs opacity-80">{doctor?.specialization}</p>
             </div>
           )}
         </div>

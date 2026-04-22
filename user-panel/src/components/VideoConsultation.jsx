@@ -1,190 +1,377 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Video, VideoOff, Mic, MicOff, PhoneOff, MessageSquare, MoreVertical, Maximize, User } from 'lucide-react';
+import React, { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
+import {
+  Video,
+  VideoOff,
+  Mic,
+  MicOff,
+  PhoneOff,
+  ArrowLeft,
+  Lock,
+  Hash,
+  AlertCircle,
+  Users,
+} from "lucide-react";
+
+const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL || "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
+const ICE_SERVERS = [
+  { urls: "stun:stun.l.google.com:19302" },
+  {
+    urls: "turn:relay1.expressturn.com:3478",
+    username: "ef2Z7F1ZKX6Z4Z7U",
+    credential: "E4c3R9W8",
+  },
+];
 
 export function VideoConsultation({ navigateTo }) {
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoOn, setIsVideoOn] = useState(true);
-  const [showChat, setShowChat] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    { sender: 'Doctor', message: 'Hello! How are you feeling today?', time: '10:00 AM' },
-    { sender: 'You', message: 'Hi Doctor, I have been experiencing some headaches.', time: '10:01 AM' }
-  ]);
-  const [newMessage, setNewMessage] = useState('');
+  const [step, setStep] = useState("join"); // join | incall
+  const [roomId, setRoomId] = useState("");
+  const [password, setPassword] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState("");
+  const [peerConnected, setPeerConnected] = useState(false);
+  const [micOn, setMicOn] = useState(true);
+  const [camOn, setCamOn] = useState(true);
+  const [audioOnly, setAudioOnly] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
 
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const socketRef = useRef(null);
+  const pcRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const timerRef = useRef(null);
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCallDuration(prev => prev + 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    if (peerConnected) {
+      timerRef.current = setInterval(() => setCallDuration((d) => d + 1), 1000);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [peerConnected]);
 
-  const formatDuration = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  const formatDuration = (s) =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+  const cleanup = () => {
+    clearInterval(timerRef.current);
+    try { socketRef.current?.disconnect(); } catch { }
+    socketRef.current = null;
+    try { pcRef.current?.close(); } catch { }
+    pcRef.current = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    if (localStreamRef.current)
+      localStreamRef.current.getTracks().forEach((t) => t.stop());
+    localStreamRef.current = null;
   };
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (newMessage.trim()) {
-      setChatMessages([...chatMessages, {
-        sender: 'You',
-        message: newMessage,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }]);
-      setNewMessage('');
+  const joinMeeting = async () => {
+    if (!roomId.trim() || !password.trim()) {
+      setError("Please enter both Meeting ID and Password.");
+      return;
+    }
+    setVerifying(true);
+    setError("");
+
+    try {
+      // Verify meeting credentials with backend
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${BACKEND_URL}/api/meetings/verify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ roomId: roomId.trim().toUpperCase(), password: password.trim() }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setError("Invalid Meeting ID or Password. Please check your email.");
+        setVerifying(false);
+        return;
+      }
+    } catch {
+      // If backend is unreachable (dev mode), proceed anyway
+      console.warn("Could not verify credentials — proceeding in dev mode");
+    }
+
+    // Start WebRTC
+    try {
+      const socket = io(SIGNALING_URL, { transports: ["websocket"] });
+      socketRef.current = socket;
+
+      const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+      pcRef.current = pc;
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: !audioOnly,
+        audio: true,
+      });
+      localStreamRef.current = stream;
+      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+
+      pc.ontrack = (event) => {
+        console.log("🎥 Track received:", event.streams);
+        if (remoteVideoRef.current)
+          remoteVideoRef.current.srcObject = event.streams[0];
+        setPeerConnected(true);
+      };
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate)
+          socket.emit("ice", { roomId: roomId.trim().toUpperCase(), candidate: event.candidate });
+      };
+
+      pc.onconnectionstatechange = () => {
+  console.log("🧠 Connection state:", pc.connectionState);
+};
+
+pc.oniceconnectionstatechange = () => {
+  console.log("🧊 ICE state:", pc.iceConnectionState);
+};
+      socket.on("peer", async ({ peerId }) => {
+        console.log("👤 Peer detected:", peerId);
+
+        // Patient SHOULD NOT create offer
+        // But we ensure connection state is handled
+        setPeerConnected(true);
+      });
+
+      socket.on("offer", async ({ from, offer }) => {
+        await pc.setRemoteDescription(offer);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit("answer", { to: from, answer });
+        setPeerConnected(true);
+      });
+
+      socket.on("answer", async ({ answer }) => {
+        await pc.setRemoteDescription(answer);
+      });
+
+      socket.on("ice", async ({ candidate }) => {
+        try { await pc.addIceCandidate(candidate); } catch { }
+      });
+
+      socket.on("peer-left", () => {
+        setPeerConnected(false);
+        if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+      });
+
+      socket.emit("join", { roomId: roomId.trim().toUpperCase() });
+      setStep("incall");
+    } catch (err) {
+      setError("Could not access camera/microphone. Please check permissions.");
+      cleanup();
+    } finally {
+      setVerifying(false);
     }
   };
 
-  const handleEndCall = () => {
-    if (confirm('Are you sure you want to end this consultation?')) {
-      navigateTo('dashboard');
-    }
+  const leaveCall = () => {
+    socketRef.current?.emit("leave", { roomId });
+    cleanup();
+    setPeerConnected(false);
+    setCallDuration(0);
+    setStep("join");
+    setRoomId("");
+    setPassword("");
   };
 
-  return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Top Bar */}
-      <header className="bg-gray-800 px-4 sm:px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <button
-              onClick={() => navigateTo('dashboard')}
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-            </button>
-            <div>
-              <h1 className="text-white text-sm sm:text-base lg:text-lg">Video Consultation</h1>
-              <p className="text-gray-400 text-xs sm:text-sm hidden sm:block">Dr. Sarah Johnson - Cardiology</p>
+  const toggleMic = () => {
+    localStreamRef.current?.getAudioTracks().forEach((t) => { t.enabled = !t.enabled; });
+    setMicOn((v) => !v);
+  };
+
+  const toggleCam = () => {
+    localStreamRef.current?.getVideoTracks().forEach((t) => { t.enabled = !t.enabled; });
+    setCamOn((v) => !v);
+  };
+
+  useEffect(() => () => cleanup(), []);
+
+  // ─── JOIN SCREEN ─────────────────────────────────────────────────────────────
+  if (step === "join") {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8">
+          {/* Header */}
+          <button
+            onClick={() => navigateTo("dashboard")}
+            className="flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-6 transition-colors"
+          >
+            <ArrowLeft size={16} /> Back to Dashboard
+          </button>
+
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-teal-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Video size={30} className="text-teal-400" />
             </div>
+            <h1 className="text-white text-2xl font-bold">Join Consultation</h1>
+            <p className="text-gray-400 text-sm mt-2">
+              Enter the meeting details sent to your email by your doctor
+            </p>
           </div>
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <div className="px-2 sm:px-4 py-1 sm:py-2 bg-red-600 text-white rounded-lg flex items-center space-x-1 sm:space-x-2">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-              <span className="text-xs sm:text-sm">{formatDuration(callDuration)}</span>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5 flex items-center gap-2">
+                <Hash size={14} className="text-teal-400" /> Meeting ID
+              </label>
+              <input
+                type="text"
+                value={roomId}
+                onChange={(e) => setRoomId(e.target.value.toUpperCase())}
+                placeholder="Enter meeting ID (e.g. AB12CD)"
+                className="w-full bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono tracking-widest text-lg"
+                maxLength={8}
+              />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5 flex items-center gap-2">
+                <Lock size={14} className="text-teal-400" /> Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter meeting password"
+                className="w-full bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                onKeyDown={(e) => e.key === "Enter" && joinMeeting()}
+              />
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={audioOnly}
+                  onChange={(e) => setAudioOnly(e.target.checked)}
+                  className="w-4 h-4 accent-teal-500"
+                />
+                Audio only (no camera)
+              </label>
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-2 bg-red-900/40 text-red-400 rounded-xl px-4 py-3 text-sm border border-red-800">
+                <AlertCircle size={16} className="shrink-0" /> {error}
+              </div>
+            )}
+
+            <button
+              onClick={joinMeeting}
+              disabled={verifying || !roomId || !password}
+              className="w-full py-3.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+            >
+              {verifying ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Joining…
+                </>
+              ) : (
+                <><Video size={18} /> Join Meeting</>
+              )}
+            </button>
+
+            <p className="text-center text-gray-500 text-xs mt-3">
+              Check your email for the Meeting ID and Password sent by your doctor.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── IN-CALL SCREEN ───────────────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen bg-gray-900 flex flex-col">
+      {/* Top Bar */}
+      <header className="bg-gray-800 px-6 py-3 flex items-center justify-between">
+        <div>
+          <h1 className="text-white font-medium">Video Consultation</h1>
+          <p className="text-gray-400 text-xs">Room: {roomId}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {peerConnected ? (
+            <span className="flex items-center gap-2 bg-green-900/50 text-green-400 text-xs px-3 py-1.5 rounded-full">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              Doctor connected · {formatDuration(callDuration)}
+            </span>
+          ) : (
+            <span className="flex items-center gap-2 bg-yellow-900/50 text-yellow-400 text-xs px-3 py-1.5 rounded-full">
+              <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+              Waiting for doctor…
+            </span>
+          )}
+          <div className="flex items-center gap-1 bg-gray-700 text-gray-300 text-xs px-3 py-1.5 rounded-full">
+            <Users size={12} />
+            {peerConnected ? "2" : "1"} / 2
           </div>
         </div>
       </header>
 
-      {/* Main Video Area */}
-      <div className="flex h-[calc(100vh-73px)]">
-        {/* Video Feed */}
-        <div className="flex-1 relative">
-          {/* Doctor's Video (Main) */}
-          <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+      {/* Video Area */}
+      <div className="flex-1 relative bg-gray-900">
+        <video
+          ref={remoteVideoRef}
+          autoPlay
+          playsInline
+          className="w-full h-full object-cover"
+          style={{ maxHeight: "calc(100vh - 130px)" }}
+        />
+        <video
+  ref={localVideoRef}
+  autoPlay
+  muted
+  playsInline
+/>
+        {!peerConnected && (
+          <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="w-32 h-32 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User className="w-16 h-16 text-white" />
+              <div className="w-24 h-24 bg-teal-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Video size={40} className="text-teal-400" />
               </div>
-              <p className="text-white text-xl mb-2">Dr. Sarah Johnson</p>
-              <p className="text-gray-400">Connected</p>
+              <p className="text-white text-lg font-medium">Connected to room</p>
+              <p className="text-gray-400 text-sm mt-1">Waiting for doctor to start…</p>
             </div>
-          </div>
-
-          {/* Patient's Video (Picture-in-Picture) */}
-          <div className="absolute bottom-6 right-6 w-48 h-36 bg-gray-700 rounded-lg border-2 border-gray-600 overflow-hidden">
-            <div className="w-full h-full flex items-center justify-center">
-              {isVideoOn ? (
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto">
-                    <User className="w-8 h-8 text-white" />
-                  </div>
-                  <p className="text-white mt-2">You</p>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <VideoOff className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-400">Video Off</p>
-                </div>
-              )}
-            </div>
-            <button className="absolute top-2 right-2 p-1 bg-gray-800 bg-opacity-75 rounded hover:bg-opacity-100 transition-all">
-              <Maximize className="w-4 h-4 text-white" />
-            </button>
-          </div>
-
-          {/* Control Bar */}
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-full px-6 py-3 flex items-center space-x-4 shadow-xl">
-            <button
-              onClick={() => setIsMuted(!isMuted)}
-              className={`p-4 rounded-full transition-colors ${
-                isMuted ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-700 hover:bg-gray-600'
-              }`}
-            >
-              {isMuted ? <MicOff className="w-6 h-6 text-white" /> : <Mic className="w-6 h-6 text-white" />}
-            </button>
-
-            <button
-              onClick={() => setIsVideoOn(!isVideoOn)}
-              className={`p-4 rounded-full transition-colors ${
-                !isVideoOn ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-700 hover:bg-gray-600'
-              }`}
-            >
-              {isVideoOn ? <Video className="w-6 h-6 text-white" /> : <VideoOff className="w-6 h-6 text-white" />}
-            </button>
-
-            <button
-              onClick={handleEndCall}
-              className="p-4 bg-red-600 rounded-full hover:bg-red-700 transition-colors"
-            >
-              <PhoneOff className="w-6 h-6 text-white" />
-            </button>
-
-            <button
-              onClick={() => setShowChat(!showChat)}
-              className="p-4 bg-gray-700 rounded-full hover:bg-gray-600 transition-colors relative"
-            >
-              <MessageSquare className="w-6 h-6 text-white" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full"></span>
-            </button>
-
-            <button className="p-4 bg-gray-700 rounded-full hover:bg-gray-600 transition-colors">
-              <MoreVertical className="w-6 h-6 text-white" />
-            </button>
-          </div>
-        </div>
-
-        {/* Chat Sidebar */}
-        {showChat && (
-          <div className="w-96 bg-white border-l border-gray-300 flex flex-col">
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-              <h3 className="text-gray-800">Chat</h3>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {chatMessages.map((msg, index) => (
-                <div key={index} className={`${msg.sender === 'You' ? 'text-right' : 'text-left'}`}>
-                  <div className={`inline-block max-w-[80%] rounded-lg px-4 py-2 ${
-                    msg.sender === 'You' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
-                  }`}>
-                    <p className="mb-1">{msg.message}</p>
-                    <p className={`text-xs ${msg.sender === 'You' ? 'text-blue-100' : 'text-gray-500'}`}>
-                      {msg.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200">
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                  Send
-                </button>
-              </div>
-            </form>
           </div>
         )}
+
+        {/* Local PiP */}
+        <div className="absolute bottom-4 right-4 w-48 h-36 bg-gray-800 rounded-xl overflow-hidden border border-gray-600 shadow-lg">
+          <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+          <span className="absolute bottom-2 left-2 text-white text-xs bg-black/60 px-2 py-0.5 rounded">You</span>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="bg-gray-800 py-4 flex items-center justify-center gap-4">
+        <button
+          onClick={toggleMic}
+          className={`p-4 rounded-full transition-all ${micOn ? "bg-gray-700 hover:bg-gray-600 text-white" : "bg-red-600 hover:bg-red-700 text-white"}`}
+        >
+          {micOn ? <Mic size={20} /> : <MicOff size={20} />}
+        </button>
+
+        {!audioOnly && (
+          <button
+            onClick={toggleCam}
+            className={`p-4 rounded-full transition-all ${camOn ? "bg-gray-700 hover:bg-gray-600 text-white" : "bg-red-600 hover:bg-red-700 text-white"}`}
+          >
+            {camOn ? <Video size={20} /> : <VideoOff size={20} />}
+          </button>
+        )}
+
+        <button
+          onClick={leaveCall}
+          className="p-4 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all"
+        >
+          <PhoneOff size={20} />
+        </button>
       </div>
     </div>
   );
