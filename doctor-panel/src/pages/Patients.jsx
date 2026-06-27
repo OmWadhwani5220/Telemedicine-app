@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, X, ChevronRight } from "lucide-react";
+import { Search, X, ChevronRight, FileText, Download } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import { fetchDoctorProfile, fetchDoctorPatients, assignConsultation, updateAppointmentStatus } from "../api/api";
 
@@ -254,6 +254,9 @@ export default function Patients() {
                 </div>
               )}
 
+              {/* Medical Records */}
+              <MedicalRecords patientId={selectedPatient.patientId} patientDisplayId={selectedPatient.patientDisplayId} />
+
               {/* Assign Consultation Form */}
               {selectedPatient.consultationStatus === "pending" && !showAssignForm && (
                 <button
@@ -320,6 +323,75 @@ export default function Patients() {
     </div>
   );
 }
+
+function MedicalRecords({ patientId, patientDisplayId }) {
+  // In a real app, these would be fetched from an API by patientId
+  // Here we show any records saved to localStorage by the VideoConsultation page
+  const [records, setRecords] = useState([]);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("consultation_records") || "[]");
+      setRecords(stored.filter((r) => String(r.patientId) === String(patientId)));
+    } catch {
+      setRecords([]);
+    }
+  }, [patientId, open]);
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between py-2 group"
+      >
+        <SectionTitle>Medical Records ({records.length})</SectionTitle>
+        <ChevronRight
+          size={14}
+          className={`text-gray-400 transition-transform ${open ? "rotate-90" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div className="mt-2 space-y-2">
+          {records.length === 0 ? (
+            <div className="bg-gray-50 rounded-xl px-4 py-4 text-center">
+              <FileText size={20} className="text-gray-300 mx-auto mb-1" />
+              <p className="text-xs text-gray-400">No consultation records saved yet.</p>
+              <p className="text-xs text-gray-400 mt-0.5">Records saved during Video Consultation will appear here.</p>
+            </div>
+          ) : (
+            records.map((rec, i) => (
+              <div key={i} className="bg-gray-50 rounded-xl px-4 py-3">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-medium text-gray-800">{rec.date}</p>
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([JSON.stringify(rec, null, 2)], { type: "application/json" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `record_${patientDisplayId}_${rec.date}.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="flex items-center gap-1 text-xs text-teal-600 hover:underline"
+                  >
+                    <Download size={11} /> Download
+                  </button>
+                </div>
+                {rec.diagnosis && <p className="text-xs text-gray-500 mt-0.5"><span className="font-medium">Diagnosis:</span> {rec.diagnosis}</p>}
+                {rec.notes && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2"><span className="font-medium">Notes:</span> {rec.notes}</p>}
+                {rec.followUp && <p className="text-xs text-gray-500 mt-0.5"><span className="font-medium">Follow-up:</span> {rec.followUp}</p>}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function SectionTitle({ children }) {
   return <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{children}</h3>;
