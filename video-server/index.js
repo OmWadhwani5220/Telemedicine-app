@@ -1,70 +1,67 @@
-// ─── video-server/index.js  (UPDATED) ──────────────────────────────────────────
-// Changes: Added "peer-joined" event so doctor gets notified when patient joins
-//          Added "leave" event handler
-//          Broadened CORS to accept multiple origins
+// video-server/index.js
+// ✅ FIX: Runs on port 5001 (backend is on 5000 — they CANNOT share a port)
 
 import express from "express";
-import http from "http";
+import http    from "http";
 import { Server } from "socket.io";
-import cors from "cors";
+import cors   from "cors";
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-app.get("/", (req, res) => res.send("Signaling Server ✅"));
+app.get("/",         (req, res) => res.send("Signaling Server ✅"));
 app.get("/api/test", (req, res) => res.json({ ok: true }));
 
 const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
-  cors: {
-    origin: "*",   // Lock down to your domains in production
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
+  cors: { origin: "*", methods: ["GET", "POST"] },
+  allowEIO3: true,
+  transports: ["polling", "websocket"],
 });
+
+// Track rooms for ICE buffering awareness
+const rooms = new Map(); // roomId → Set of socket ids
 
 io.on("connection", (socket) => {
   console.log("✅ connected:", socket.id);
 
-  // Patient or Doctor joins a room
   socket.on("join", ({ roomId }) => {
     socket.join(roomId);
+    if (!rooms.has(roomId)) rooms.set(roomId, new Set());
+    rooms.get(roomId).add(socket.id);
+
     const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
-    const other = clients.find((id) => id !== socket.id);
-    console.log("ROOM", roomId, "clients:", clients, "other:", other);
+    const other   = clients.find((id) => id !== socket.id);
+    console.log(`[${roomId}] peers: ${clients.length}`);
 
     if (other) {
-      // Both peers are in the room — tell each other
+      // Both peers present — tell each other their peer ID
       socket.emit("peer", { peerId: other });
       io.to(other).emit("peer", { peerId: socket.id });
-
-      // Notify the host (first peer = doctor) that a new participant joined
       io.to(other).emit("peer-joined", { peerId: socket.id });
     }
   });
 
-  // Explicit leave event
+  // Explicit leave
   socket.on("leave", ({ roomId }) => {
     socket.leave(roomId);
+    rooms.get(roomId)?.delete(socket.id);
     socket.to(roomId).emit("peer-left");
-    console.log(`🚪 ${socket.id} left room ${roomId}`);
+    console.log(`🚪 ${socket.id} left ${roomId}`);
   });
 
-  // WebRTC signaling relay
+  // WebRTC relay — support both direct (to) and room-broadcast (roomId)
   socket.on("offer", ({ to, offer }) => {
-    console.log("offer", socket.id, "->", to);
     io.to(to).emit("offer", { from: socket.id, offer });
   });
 
   socket.on("answer", ({ to, answer }) => {
-    console.log("answer", socket.id, "->", to);
     io.to(to).emit("answer", { from: socket.id, answer });
   });
 
   socket.on("ice", ({ to, candidate, roomId }) => {
-    // Support both direct-to-peer and room-broadcast ICE
     if (to) {
       io.to(to).emit("ice", { from: socket.id, candidate });
     } else if (roomId) {
@@ -76,6 +73,7 @@ io.on("connection", (socket) => {
     for (const roomId of socket.rooms) {
       if (roomId !== socket.id) {
         socket.to(roomId).emit("peer-left");
+        rooms.get(roomId)?.delete(socket.id);
       }
     }
   });
@@ -83,7 +81,8 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => console.log("❌ disconnected:", socket.id));
 });
 
-const PORT = process.env.PORT || 5000;
+// ✅ FIX: port 5001, not 5000 (which is taken by the backend)
+const PORT = process.env.PORT || 5001;
 httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ Signaling server running on port ${PORT}`);
+  console.log(`✅ Signaling server → http://localhost:${PORT}`);
 });

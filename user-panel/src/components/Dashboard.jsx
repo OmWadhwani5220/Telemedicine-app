@@ -95,19 +95,19 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
         )}
 
         {/* Profile Summary Card */}
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-4 sm:p-6 mb-5 sm:mb-6 text-white shadow-lg">
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-4 sm:p-6 mb-5 sm:mb-6  shadow-lg">
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
-              <User className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+              <User className="w-6 h-6 sm:w-8 sm:h-8 " />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-emerald-100 text-xs sm:text-sm">Patient</p>
-              <h2 className="text-lg sm:text-2xl font-bold truncate">{patientName}</h2>
+              <h2 className="text-lg sm:text-2xl font-bold truncate text-white" >{patientName}</h2>
               {patient && (
                 <div className="flex flex-wrap gap-2 mt-1 text-xs sm:text-sm text-emerald-100">
                   {patient.bloodGroup && (
                     <span className="flex items-center gap-1">
-                      <Heart className="w-3 h-3" /> {patient.bloodGroup}
+                      <Heart className="w-3 h-3 text-white" /> {patient.bloodGroup}
                     </span>
                   )}
                   {patient.gender && <span>• {patient.gender}</span>}
@@ -124,18 +124,18 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
           </div>
 
           {patient && (
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-4 pt-4 border-t border-white border-opacity-20">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-4 pt-4 border-t text-white border-white border-opacity-20">
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-bold">{patient.height ?? "—"}</p>
-                <p className="text-emerald-100 text-xs">Height (cm)</p>
+                <p className="text-emerald-100 text-xs text-white">Height (cm)</p>
               </div>
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-bold">{patient.weight ?? "—"}</p>
-                <p className="text-emerald-100 text-xs">Weight (kg)</p>
+                <p className="text-emerald-100 text-xs text-white">Weight (kg)</p>
               </div>
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-bold">{appointments.length}</p>
-                <p className="text-emerald-100 text-xs">Appointments</p>
+                <p className="text-emerald-100 text-xs text-white">Appointments</p>
               </div>
             </div>
           )}
