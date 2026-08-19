@@ -12,12 +12,12 @@ import VideoCall from "./pages/VideoCall";   // ✅ NEW
 function App() {
   return (
     <Routes>
-      <Route path="/"              element={<Dashboard />} />
+        <Route path="/"              element={<Dashboard />} />
       <Route path="/appointments"  element={<Appointments />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/patients"      element={<Patients />} />
       <Route path="/prescriptions" element={<PrescriptionUpload />} />
-      <Route path="/video-call"    element={<VideoCall />} />   {/* ✅ NEW */}
+      <Route path="/VideoCall"    element={<VideoCall />} />   {/* ✅ NEW */}
     </Routes>
   );
 }

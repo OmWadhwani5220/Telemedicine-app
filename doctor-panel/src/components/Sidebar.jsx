@@ -1,6 +1,7 @@
+
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  Calendar, Bell, Users, FilePlus, Settings, LogOut, ChevronRight,
+  Calendar, Bell, Users, FilePlus, Settings, LogOut, ChevronRight, Video,
 } from "lucide-react";
 
 export default function Sidebar({ doctor, isExpanded, setIsExpanded }) {
@@ -11,6 +12,7 @@ export default function Sidebar({ doctor, isExpanded, setIsExpanded }) {
     { name: "Notifications", icon: Bell, path: "/notifications" },
     { name: "Patients", icon: Users, path: "/patients" },
     { name: "Prescription Upload", icon: FilePlus, path: "/prescriptions" },
+    { name: "Video Call", icon: Video, path: "/VideoCall" },
     { name: "Settings", icon: Settings, path: "/settings" },
   ];
 
