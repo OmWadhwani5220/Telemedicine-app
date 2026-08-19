@@ -1,7 +1,7 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import sendEmail from "../utils/sendEmail.js";
-import { meetingInviteTemplate } from "../utils/emailTemplates.js";
+import { meetingInviteTemplate } from "../utils/meetingEmailTemplate.js";
 
 const router = express.Router();
 

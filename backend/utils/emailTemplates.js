@@ -103,3 +103,24 @@ export const doctorDeletedTemplate = (name) => getBaseTemplate(`
     <p>Your account has been removed by the administrator.</p>
     <p>If you believe this was an error, please contact support.</p>
 `);
+
+export const meetingInviteTemplate = ({
+  patientName,
+  doctorName,
+  roomId,
+  password,
+}) => `
+<html>
+<body>
+  <h2>Video Consultation Invitation</h2>
+
+  <p>Hello ${patientName},</p>
+
+  <p>Dr. ${doctorName} invited you.</p>
+
+  <p>Meeting ID: ${roomId}</p>
+
+  <p>Password: ${password}</p>
+</body>
+</html>
+`;

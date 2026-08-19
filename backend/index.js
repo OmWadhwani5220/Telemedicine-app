@@ -9,8 +9,11 @@ import authRoutes    from "./routes/authRoutes.js";
 import adminRoutes   from "./routes/adminRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import doctorRoutes  from "./routes/doctorRoutes.js";
+import meetingRoutes from "./routes/meetingRoutes.js";
 import Contact       from "./models/Contact.js";
 import Signup        from "./models/Signup.js";
+//import prescriptionRoutes from "./routes/prescriptionRoutes.js"; 
+
 
 dotenv.config();
 
@@ -76,7 +79,8 @@ app.use("/api/auth",    authRoutes);
 app.use("/api/admin",   adminRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/doctor",  doctorRoutes);
-
+app.use("/api/meetings", meetingRoutes);
+//app.use("/api/prescriptions", prescriptionRoutes); 
 /* ALL USERS – quick admin helper */
 app.get("/api/users", async (req, res) => {
   try {
