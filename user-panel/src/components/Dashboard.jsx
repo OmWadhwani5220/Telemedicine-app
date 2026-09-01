@@ -1,25 +1,35 @@
 import React, { useState, useEffect } from "react";
 import {
-  User, Bell, Calendar, Activity, FileText,
-  Pill, MessageSquare, Heart, Clock, ChevronRight,
-  AlertCircle, ArrowRight,
+  Calendar, Activity, FileText, Pill, Heart,
+  Clock, ChevronRight, AlertCircle, ArrowRight,
+  Video, User, Ruler, Weight, Droplet, Stethoscope,
 } from "lucide-react";
 import { getPatientProfile, getMyAppointments } from "../services/api";
+import "./Dashboard.css";
+
+const BACKEND_URL = import.meta.env?.VITE_BACKEND_URL || "http://localhost:5000";
 
 export default function Dashboard({ patientName = "Patient", navigateTo, profileComplete }) {
-  const [patient,      setPatient]      = useState(null);
-  const [appointments, setAppointments] = useState([]);
-  const [loading,      setLoading]      = useState(true);
+  const [patient,       setPatient]       = useState(null);
+  const [appointments,  setAppointments]  = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [loading,       setLoading]       = useState(true);
 
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [profileRes, apptRes] = await Promise.all([
+        const token = localStorage.getItem("token");
+        const [profileRes, apptRes, rxRes] = await Promise.all([
           getPatientProfile(),
           getMyAppointments(),
+          fetch(`${BACKEND_URL}/api/prescriptions/my`, {
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
+          }).then(r => (r.ok ? r.json() : { prescriptions: [] })).catch(() => ({ prescriptions: [] })),
         ]);
         if (profileRes?.patient) setPatient(profileRes.patient);
         if (Array.isArray(apptRes)) setAppointments(apptRes);
+        if (Array.isArray(rxRes?.prescriptions)) setPrescriptions(rxRes.prescriptions);
       } catch (err) {
         console.error("Dashboard load error:", err);
       } finally {
@@ -29,210 +39,295 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
     fetchAll();
   }, []);
 
-  const quickLinks = [
-    { label:"Book Appointment",   icon:Calendar,      screen:"appointments", bg:"bg-blue-50",   text:"text-blue-600"   },
-    { label:"Symptom Checker",    icon:Activity,      screen:"symptoms",     bg:"bg-purple-50", text:"text-purple-600" },
-    { label:"Medical Records",    icon:FileText,      screen:"records",      bg:"bg-orange-50", text:"text-orange-600" },
-    { label:"Prescriptions",      icon:Pill,          screen:"prescriptions",bg:"bg-green-50",  text:"text-green-600"  },
-    { label:"Messages",           icon:MessageSquare, screen:"messages",     bg:"bg-pink-50",   text:"text-pink-600"   },
-    { label:"Video Consultation", icon:Calendar,      screen:"video",        bg:"bg-teal-50",   text:"text-teal-600"   },
-  ];
-
-  const PROTECTED = ["appointments","symptoms","video","records","prescriptions","messages"];
+  const PROTECTED = ["appointments", "symptoms", "video", "records", "prescriptions"];
   const isLocked = (screen) => PROTECTED.includes(screen) && !profileComplete;
 
-  const statusColors = {
-    pending:   "bg-yellow-100 text-yellow-700",
-    confirmed: "bg-green-100 text-green-700",
-    cancelled: "bg-red-100 text-red-700",
-    completed: "bg-blue-100 text-blue-700",
+  const quickLinks = [
+    { label: "Book Appointment",   icon: Calendar, screen: "appointments",  color: "#0d9286" },
+    { label: "Symptom Checker",    icon: Activity, screen: "symptoms",      color: "#8b5cf6" },
+    { label: "Medical Records",    icon: FileText, screen: "records",       color: "#f97316" },
+    { label: "Prescriptions",      icon: Pill,     screen: "prescriptions", color: "#10b981" },
+    { label: "Video Consultation", icon: Video,    screen: "video",         color: "#3b82f6" },
+  ];
+
+  const upcoming = appointments
+    .filter(a => a.status !== "cancelled")
+    .slice()
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(0, 4);
+
+  const fmtDate = (iso) => {
+    if (!iso) return "—";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+    } catch { return iso; }
   };
 
+  const initialsOf = (name) =>
+    (name || "Dr").split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+
+  // Purely decorative ring percentages derived from real values where possible
+  const heightPct = patient?.height ? Math.min(100, Math.round((patient.height / 200) * 100)) : 0;
+  const weightPct = patient?.weight ? Math.min(100, Math.round((patient.weight / 100) * 100)) : 0;
+  const apptPct   = Math.min(100, appointments.length * 12);
+  const rxPct     = Math.min(100, prescriptions.length * 15);
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="db-wrap">
 
-      {/* ── Top Bar ── */}
-      <nav className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-gray-800 text-lg sm:text-xl font-semibold">Dashboard</h1>
-          <p className="text-gray-400 text-sm">Welcome back, {patientName} 👋</p>
+      {/* ── Greeting ── */}
+      <div className="db-topline">
+        <div className="db-greeting">
+          <h1>Hello, {patientName} 👋</h1>
+          <p>Here's an overview of your health &amp; upcoming care</p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button className="p-2 hover:bg-gray-100 rounded-lg relative">
-            <Bell className="w-5 h-5 text-gray-500" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+      </div>
+
+      {/* ── Profile incomplete alert ── */}
+      {profileComplete === false && (
+        <div className="db-alert">
+          <div className="db-alert-icon">
+            <AlertCircle size={19} color="#f59e0b" />
+          </div>
+          <div className="db-alert-text">
+            <p>Complete Your Profile</p>
+            <p>Fill in your profile details to unlock appointments, symptom checker, and all other features.</p>
+          </div>
+          <button className="db-alert-btn" onClick={() => navigateTo("settings")}>
+            Complete Profile <ArrowRight size={14} />
           </button>
-          <div className="w-9 h-9 bg-emerald-100 rounded-full flex items-center justify-center">
-            <User className="w-5 h-5 text-emerald-600" />
-          </div>
         </div>
-      </nav>
+      )}
 
-      {/* ── Main ── */}
-      <main className="flex-1 p-4 sm:p-6">
-
-        {/* ── Profile Incomplete Banner ── */}
-        {profileComplete === false && (
-          <div className="mb-5 bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-start sm:items-center gap-3 flex-1">
-              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="w-5 h-5 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-amber-900 font-semibold text-sm">Complete Your Profile</p>
-                <p className="text-amber-700 text-xs mt-0.5">
-                  Fill in your profile details to unlock appointments, symptom checker, and all other features.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigateTo("settings")}
-              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-xl transition-colors flex-shrink-0"
-            >
-              Complete Profile <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Profile Summary Card */}
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-4 sm:p-6 mb-5 sm:mb-6  shadow-lg">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
-              <User className="w-6 h-6 sm:w-8 sm:h-8 " />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-emerald-100 text-xs sm:text-sm">Patient</p>
-              <h2 className="text-lg sm:text-2xl font-bold truncate text-white" >{patientName}</h2>
-              {patient && (
-                <div className="flex flex-wrap gap-2 mt-1 text-xs sm:text-sm text-emerald-100">
-                  {patient.bloodGroup && (
-                    <span className="flex items-center gap-1">
-                      <Heart className="w-3 h-3 text-white" /> {patient.bloodGroup}
-                    </span>
-                  )}
-                  {patient.gender && <span>• {patient.gender}</span>}
-                  {patient.phone  && <span className="hidden sm:inline">• {patient.phone}</span>}
-                </div>
-              )}
-            </div>
-            <button
-              onClick={() => navigateTo("settings")}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-xs sm:text-sm transition-all flex-shrink-0"
-            >
-              Edit Profile
-            </button>
-          </div>
-
-          {patient && (
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-4 pt-4 border-t text-white border-white border-opacity-20">
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-bold">{patient.height ?? "—"}</p>
-                <p className="text-emerald-100 text-xs text-white">Height (cm)</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-bold">{patient.weight ?? "—"}</p>
-                <p className="text-emerald-100 text-xs text-white">Weight (kg)</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-bold">{appointments.length}</p>
-                <p className="text-emerald-100 text-xs text-white">Appointments</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Quick Links Grid */}
-        <h3 className="text-gray-700 font-semibold mb-3 text-sm sm:text-base">Quick Access</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6">
-          {quickLinks.map(({ label, icon: Icon, screen, bg, text }) => {
-            const locked = isLocked(screen);
-            return (
-              <button
-                key={screen}
-                onClick={() => navigateTo(screen)}
-                title={locked ? "Complete your profile to unlock" : label}
-                className={`relative ${bg} rounded-xl p-3 sm:p-4 flex flex-col items-center gap-1.5 sm:gap-2
-                  hover:scale-105 transition-transform shadow-sm
-                  ${locked ? "opacity-50" : ""}`}
-              >
-                <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${text}`} />
-                <span className={`text-xs font-medium ${text} text-center leading-tight`}>{label}</span>
-                {locked && (
-                  <span className="absolute top-1.5 right-1.5 text-xs">🔒</span>
-                )}
+      {/* ── Banner + Health card ── */}
+      <div className="db-hero-row">
+        <div className="db-banner">
+          <div className="db-banner-text">
+            <h2>Welcome to your Patient Dashboard</h2>
+            <p>Book appointments, track prescriptions, and manage your health records — all in one place.</p>
+            <div className="db-banner-actions">
+              <button className="db-btn db-btn-solid" onClick={() => navigateTo("appointments")}>
+                <Calendar size={15} /> Book Appointment
               </button>
-            );
-          })}
+              <button className="db-btn db-btn-outline" onClick={() => navigateTo("records")}>
+                View Records
+              </button>
+            </div>
+          </div>
+          <div className="db-banner-icon">
+            <Stethoscope size={40} color="#fff" />
+          </div>
         </div>
 
-        {/* Recent Appointments */}
-        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-800 font-semibold text-sm sm:text-base">Recent Appointments</h3>
-            <button
-              onClick={() => navigateTo("appointments")}
-              className="text-emerald-600 text-xs sm:text-sm flex items-center hover:underline"
-            >
-              Book new <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
-            </button>
+        <div className="db-health-card">
+          <h3>Health Overview</h3>
+          <div className="db-health-row">
+            <span className="db-health-label">
+              <span className="db-health-dot" style={{ background: "#10b981" }} />
+              Blood Group
+            </span>
+            <span className="db-health-value">{patient?.bloodGroup || "—"}</span>
+          </div>
+          <div className="db-health-row">
+            <span className="db-health-label">
+              <span className="db-health-dot" style={{ background: "#3b82f6" }} />
+              Gender
+            </span>
+            <span className="db-health-value">{patient?.gender || "—"}</span>
+          </div>
+          <div className="db-health-row">
+            <span className="db-health-label">
+              <span className="db-health-dot" style={{ background: "#f59e0b" }} />
+              Phone
+            </span>
+            <span className="db-health-value">{patient?.phone || "—"}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Stat rings ── */}
+      <div className="db-stats-grid">
+        <StatCard icon={<Ruler size={16} color="#0d9286" />} label="Height" value={patient?.height ? `${patient.height} cm` : "—"} pct={heightPct} color="#0d9286" />
+        <StatCard icon={<Weight size={16} color="#3b82f6" />} label="Weight" value={patient?.weight ? `${patient.weight} kg` : "—"} pct={weightPct} color="#3b82f6" />
+        <StatCard icon={<Calendar size={16} color="#f97316" />} label="Appointments" value={String(appointments.length)} pct={apptPct} color="#f97316" />
+        <StatCard icon={<Pill size={16} color="#8b5cf6" />} label="Prescriptions" value={String(prescriptions.length)} pct={rxPct} color="#8b5cf6" />
+      </div>
+
+      {/* ── Main grid ── */}
+      <div className="db-content-grid">
+
+        {/* Left column */}
+        <div>
+          {/* Quick access */}
+          <div className="db-panel">
+            <div className="db-panel-head">
+              <h3>Quick Access</h3>
+            </div>
+            <div className="db-quick-grid">
+              {quickLinks.map(({ label, icon: Icon, screen, color }) => {
+                const locked = isLocked(screen);
+                return (
+                  <div
+                    key={screen}
+                    className={`db-quick-tile${locked ? " db-locked" : ""}`}
+                    onClick={() => !locked && navigateTo(screen)}
+                    title={locked ? "Complete your profile to unlock" : label}
+                  >
+                    {locked && <span className="db-quick-lock">🔒</span>}
+                    <div className="db-quick-icon" style={{ background: `${color}1a` }}>
+                      <Icon size={19} color={color} />
+                    </div>
+                    <span>{label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          {/* Recent appointments table */}
+          <div className="db-panel">
+            <div className="db-panel-head">
+              <h3>Recent Appointments</h3>
+              <button className="db-panel-link" onClick={() => navigateTo("appointments")}>
+                Book new <ChevronRight size={13} />
+              </button>
             </div>
-          ) : appointments.length === 0 ? (
-            <div className="text-center py-8 sm:py-10">
-              <Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-400 text-sm">No appointments yet</p>
-              {profileComplete && (
+
+            {loading ? (
+              <div className="db-spin" />
+            ) : appointments.length === 0 ? (
+              <div className="db-empty">
+                <div className="db-empty-icon"><Calendar size={22} color="#94a3b8" /></div>
+                <p>No appointments yet</p>
                 <button
-                  onClick={() => navigateTo("appointments")}
-                  className="mt-3 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600 transition-colors"
+                  className="db-empty-btn"
+                  onClick={() => navigateTo(profileComplete ? "appointments" : "settings")}
                 >
-                  Book your first appointment
+                  {profileComplete ? "Book your first appointment" : "Complete profile first"}
                 </button>
-              )}
-              {!profileComplete && (
-                <button
-                  onClick={() => navigateTo("settings")}
-                  className="mt-3 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm hover:bg-amber-600 transition-colors"
-                >
-                  Complete profile first
-                </button>
-              )}
+              </div>
+            ) : (
+              <table className="db-table">
+                <thead>
+                  <tr>
+                    <th>Doctor</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {appointments.slice(0, 6).map(appt => (
+                    <tr key={appt._id}>
+                      <td>
+                        <div className="db-doc-cell">
+                          <div className="db-doc-avatar">
+                            {initialsOf(appt.doctorId?.name)}
+                          </div>
+                          <div>
+                            <div className="db-doc-name">Dr. {appt.doctorId?.name ?? "Doctor"}</div>
+                            <div className="db-doc-spec">{appt.doctorId?.specialization ?? ""}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`status-pill status-${appt.status || "pending"}`}>
+                          {appt.status || "pending"}
+                        </span>
+                      </td>
+                      <td>{fmtDate(appt.date)}</td>
+                      <td style={{ display: "flex", alignItems: "center", gap: 5, color: "#94a3b8" }}>
+                        <Clock size={12} /> {appt.timeSlot}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* Right column */}
+        <div>
+          {/* Appointment timeline */}
+          <div className="db-panel">
+            <div className="db-panel-head">
+              <h3>Appointment Timeline</h3>
+              <button className="db-panel-link" onClick={() => navigateTo("appointments")}>
+                See All <ChevronRight size={13} />
+              </button>
             </div>
-          ) : (
-            <div className="space-y-2 sm:space-y-3">
-              {appointments.slice(0, 5).map((appt) => (
-                <div key={appt._id}
-                  className="flex items-center gap-3 sm:gap-4 p-3 bg-gray-50 rounded-xl">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-gray-800 text-xs sm:text-sm font-medium truncate">
-                      {appt.doctorId?.name ?? "Doctor"}
-                    </p>
-                    <p className="text-gray-500 text-xs hidden sm:block">
-                      {appt.doctorId?.specialization ?? ""}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5 text-gray-400 text-xs">
-                      <Clock className="w-3 h-3" />
-                      {appt.date} • {appt.timeSlot}
+
+            {loading ? (
+              <div className="db-spin" />
+            ) : upcoming.length === 0 ? (
+              <div className="db-empty">
+                <p>No upcoming appointments</p>
+              </div>
+            ) : (
+              <div className="db-timeline">
+                {upcoming.map(appt => (
+                  <div key={appt._id} className="db-timeline-item">
+                    <div className="db-timeline-dot-wrap">
+                      <div className="db-timeline-dot" />
+                    </div>
+                    <div>
+                      <div className="db-timeline-date">{fmtDate(appt.date)} · {appt.timeSlot}</div>
+                      <p className="db-timeline-title">Dr. {appt.doctorId?.name ?? "Doctor"}</p>
+                      <p className="db-timeline-sub">{appt.doctorId?.specialization ?? appt.consultationType ?? ""}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium flex-shrink-0 ${
-                    statusColors[appt.status] ?? "bg-gray-100 text-gray-600"
-                  }`}>
-                    {appt.status}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Prescriptions preview */}
+          <div className="db-panel">
+            <div className="db-panel-head">
+              <h3>Recent Prescriptions</h3>
+              <button className="db-panel-link" onClick={() => navigateTo("prescriptions")}>
+                See All <ChevronRight size={13} />
+              </button>
             </div>
-          )}
+
+            {loading ? (
+              <div className="db-spin" />
+            ) : prescriptions.length === 0 ? (
+              <div className="db-empty">
+                <p>No prescriptions yet</p>
+              </div>
+            ) : (
+              prescriptions.slice(0, 3).map(item => (
+                <div key={item._id} className="db-rx-item">
+                  <div className="db-rx-icon">
+                    <FileText size={15} />
+                  </div>
+                  <div>
+                    <p className="db-rx-title">Dr. {item.doctorName}</p>
+                    <p className="db-rx-sub">{item.prescription?.diagnosis || "Prescription issued"}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </main>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ icon, label, value, pct, color }) {
+  return (
+    <div className="db-stat-card">
+      <div className="db-stat-info">
+        <p>{label}</p>
+        <p>{value}</p>
+      </div>
+      <div className="db-stat-ring" style={{ "--pct": pct, "--ring-color": color }}>
+        <div className="db-stat-ring-inner">{icon}</div>
+      </div>
     </div>
   );
 }

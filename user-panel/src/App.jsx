@@ -1,6 +1,6 @@
 // user-panel/src/App.jsx
 // FIXES:
-//  ✅ Added missing screens: symptoms, records, recordDetails, prescriptions, messages
+//  ✅ Added missing screens: symptoms, records, recordDetails, prescriptions
 //  ✅ Computes profileComplete from patient profile and passes it to Layout + Dashboard
 //  ✅ Protected nav items only locked when profile truly incomplete
 
@@ -13,7 +13,6 @@ import { Settings }            from "./components/Settings";
 import { SymptomChecker }      from "./components/SymptomChecker";
 import { MedicalRecords }      from "./components/MedicalRecords";
 import { Prescriptions }       from "./components/Prescriptions";
-import { Messages }            from "./components/Messages";
 
 // RecordDetails may not exist yet — lazy with fallback
 let RecordDetails = null;
@@ -154,7 +153,6 @@ export default function App() {
           ? wrap(RecordDetails, { record: selectedRecord })
           : <MedicalRecords navigateTo={handleNavigate} />;
       case "prescriptions":return <Prescriptions      navigateTo={handleNavigate} />;
-      case "messages":     return <Messages           navigateTo={handleNavigate} />;
       case "settings":     return <Settings navigateTo={handleNavigate} onLogout={handleLogout} />;
       default:             return <Dashboard {...p} />;
     }

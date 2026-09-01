@@ -146,9 +146,9 @@ export function AppointmentBooking({ navigateTo }) {
       alignItems:"center", justifyContent:"center", padding:24 }}>
       <div style={{ background:"white", borderRadius:24, padding:48, textAlign:"center",
         maxWidth:360, width:"100%", boxShadow:"0 8px 40px rgba(0,0,0,0.08)" }}>
-        <div style={{ width:80, height:80, borderRadius:"50%", background:"#D1FAE5",
+        <div style={{ width:80, height:80, borderRadius:"50%", background:"#e3f4f2",
           display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px" }}>
-          <CheckCircle size={40} color="#10B981" />
+          <CheckCircle size={40} color="#0d9286" />
         </div>
         <h2 style={{ fontSize:22, fontWeight:800, color:"#0F172A", margin:"0 0 8px" }}>
           Appointment Booked!
@@ -156,7 +156,7 @@ export function AppointmentBooking({ navigateTo }) {
         <p style={{ color:"#64748B", fontSize:14, margin:"0 0 6px" }}>
           Dr. {selected?.name}
         </p>
-        <p style={{ color:"#10B981", fontSize:13, fontWeight:600, margin:0 }}>
+        <p style={{ color:"#0d9286", fontSize:13, fontWeight:600, margin:0 }}>
           {chosenDate?.label} • {chosenSlot?.label}
         </p>
         <p style={{ color:"#94A3B8", fontSize:12, marginTop:16 }}>
@@ -202,7 +202,7 @@ export function AppointmentBooking({ navigateTo }) {
               style={{
                 flexShrink:0, padding:"6px 14px", borderRadius:20, fontSize:12,
                 fontWeight:600, border:"none", cursor:"pointer", transition:"all 0.15s",
-                background: filter === s ? "#10B981" : "#F1F5F9",
+                background: filter === s ? "#0d9286" : "#F1F5F9",
                 color:      filter === s ? "white"   : "#64748B",
               }}>
               {s}
@@ -216,7 +216,7 @@ export function AppointmentBooking({ navigateTo }) {
         {loading ? (
           <div style={{ display:"flex", flexDirection:"column", alignItems:"center",
             justifyContent:"center", paddingTop:80, gap:12 }}>
-            <Loader2 size={36} color="#10B981" style={{ animation:"spin 0.8s linear infinite" }} />
+            <Loader2 size={36} color="#0d9286" style={{ animation:"spin 0.8s linear infinite" }} />
             <p style={{ color:"#94A3B8", fontSize:14 }}>Loading verified doctors…</p>
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
           </div>
@@ -282,14 +282,14 @@ export function AppointmentBooking({ navigateTo }) {
                   boxShadow:"0 1px 4px rgba(0,0,0,0.04)",
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = "#10B981";
-                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(16,185,129,0.15)";
+                  e.currentTarget.style.borderColor = "#0d9286";
+                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(13,146,134,0.15)";
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.borderColor = "#E2E8F0";
                   e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)";
                 }}>
-                <p style={{ fontSize:11, fontWeight:600, color:"#10B981",
+                <p style={{ fontSize:11, fontWeight:600, color:"#0d9286",
                   textTransform:"uppercase", letterSpacing:"0.05em", margin:"0 0 4px" }}>
                   {d.label.split(" ")[0]}
                 </p>
@@ -325,7 +325,7 @@ export function AppointmentBooking({ navigateTo }) {
         <div style={{ display:"flex", alignItems:"center", gap:8, margin:"16px 0 12px",
           padding:"10px 14px", background:"white", borderRadius:12,
           border:"1.5px solid #E2E8F0" }}>
-          <Calendar size={15} color="#10B981" />
+          <Calendar size={15} color="#0d9286" />
           <span style={{ fontSize:13, fontWeight:600, color:"#0F172A" }}>
             {chosenDate?.label}
           </span>
@@ -334,7 +334,7 @@ export function AppointmentBooking({ navigateTo }) {
         {slotsLoading ? (
           <div style={{ background:"white", borderRadius:16, padding:48,
             display:"flex", flexDirection:"column", alignItems:"center", gap:12 }}>
-            <Loader2 size={32} color="#10B981"
+            <Loader2 size={32} color="#0d9286"
               style={{ animation:"spin 0.8s linear infinite" }} />
             <p style={{ color:"#94A3B8", fontSize:13 }}>Loading available slots…</p>
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
@@ -349,7 +349,7 @@ export function AppointmentBooking({ navigateTo }) {
               All slots are booked for this day. Please choose another date.
             </p>
             <button onClick={back}
-              style={{ marginTop:16, padding:"10px 24px", background:"#10B981",
+              style={{ marginTop:16, padding:"10px 24px", background:"#0d9286",
                 color:"white", border:"none", borderRadius:10, fontWeight:600,
                 fontSize:13, cursor:"pointer" }}>
               Pick another date
@@ -360,7 +360,7 @@ export function AppointmentBooking({ navigateTo }) {
             {/* Legend */}
             <div style={{ display:"flex", gap:16, marginBottom:14, flexWrap:"wrap" }}>
               {[
-                { color:"#D1FAE5", border:"#10B981", text:"#065F46", label:"Available" },
+                { color:"#e3f4f2", border:"#0d9286", text:"#0b6f66", label:"Available" },
                 { color:"#F1F5F9", border:"#E2E8F0", text:"#94A3B8", label:"Booked"    },
                 { color:"#FEF3C7", border:"#F59E0B", text:"#92400E", label:"Break"     },
               ].map(({ color, border, text, label }) => (
@@ -385,13 +385,13 @@ export function AppointmentBooking({ navigateTo }) {
                       padding:"12px 10px", borderRadius:12, border:"2px solid",
                       fontSize:12, fontWeight:600, cursor: s.available ? "pointer" : "not-allowed",
                       transition:"all 0.15s", textAlign:"center",
-                      background: chosen    ? "#10B981"
+                      background: chosen    ? "#0d9286"
                                 : s.available ? "white" : "#F8FAFC",
-                      borderColor: chosen    ? "#10B981"
-                                 : s.available ? "#D1FAE5" : "#E2E8F0",
+                      borderColor: chosen    ? "#0d9286"
+                                 : s.available ? "#e3f4f2" : "#E2E8F0",
                       color:  chosen    ? "white"
-                            : s.available ? "#065F46" : "#CBD5E1",
-                      boxShadow: chosen ? "0 4px 14px rgba(16,185,129,0.3)" : "none",
+                            : s.available ? "#0b6f66" : "#CBD5E1",
+                      boxShadow: chosen ? "0 4px 14px rgba(13,146,134,0.3)" : "none",
                       opacity: s.available ? 1 : 0.6,
                     }}>
                     <Clock size={12} style={{ marginBottom:4,
@@ -427,7 +427,7 @@ export function AppointmentBooking({ navigateTo }) {
           boxShadow:"0 4px 24px rgba(0,0,0,0.06)", marginBottom:16 }}>
 
           {/* Gradient header */}
-          <div style={{ background:"linear-gradient(135deg,#10B981,#0D9488)",
+          <div style={{ background:"linear-gradient(135deg,#0d9286,#0b6f66)",
             padding:"24px 20px", color:"white" }}>
             <p style={{ fontSize:11, opacity:0.8, margin:"0 0 4px",
               textTransform:"uppercase", letterSpacing:"0.08em" }}>Appointment Summary</p>
@@ -446,9 +446,9 @@ export function AppointmentBooking({ navigateTo }) {
               { icon: Video,    label:"Type",  value: consultType === "video" ? "Video Consultation" : consultType === "chat" ? "Chat" : "In-Person" },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} style={{ display:"flex", alignItems:"center", gap:14 }}>
-                <div style={{ width:38, height:38, borderRadius:10, background:"#F0FDF4",
+                <div style={{ width:38, height:38, borderRadius:10, background:"#eef8f7",
                   display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Icon size={17} color="#10B981" />
+                  <Icon size={17} color="#0d9286" />
                 </div>
                 <div>
                   <p style={{ fontSize:11, color:"#94A3B8", margin:"0 0 2px",
@@ -480,9 +480,9 @@ export function AppointmentBooking({ navigateTo }) {
                   flex:1, padding:"10px 6px", borderRadius:10, border:"2px solid",
                   fontSize:12, fontWeight:600, cursor:"pointer", textAlign:"center",
                   transition:"all 0.15s",
-                  background:    consultType === val ? "#F0FDF4" : "white",
-                  borderColor:   consultType === val ? "#10B981" : "#E2E8F0",
-                  color:         consultType === val ? "#065F46" : "#64748B",
+                  background:    consultType === val ? "#eef8f7" : "white",
+                  borderColor:   consultType === val ? "#0d9286" : "#E2E8F0",
+                  color:         consultType === val ? "#0b6f66" : "#64748B",
                 }}>
                 <span style={{ fontSize:18, display:"block", marginBottom:4 }}>{icon}</span>
                 {label}
@@ -506,7 +506,7 @@ export function AppointmentBooking({ navigateTo }) {
             style={{ width:"100%", padding:"10px 12px", border:"1.5px solid #E2E8F0",
               borderRadius:10, fontSize:13, color:"#0F172A", resize:"vertical",
               outline:"none", fontFamily:"inherit", boxSizing:"border-box" }}
-            onFocus={e => e.target.style.borderColor = "#10B981"}
+            onFocus={e => e.target.style.borderColor = "#0d9286"}
             onBlur={e  => e.target.style.borderColor = "#E2E8F0"}
           />
         </div>
@@ -527,10 +527,10 @@ export function AppointmentBooking({ navigateTo }) {
           disabled={booking}
           style={{
             width:"100%", padding:"16px", borderRadius:14,
-            background: booking ? "#94A3B8" : "linear-gradient(135deg,#10B981,#0D9488)",
+            background: booking ? "#94A3B8" : "linear-gradient(135deg,#0d9286,#0b6f66)",
             color:"white", border:"none", fontSize:15, fontWeight:800,
             cursor: booking ? "not-allowed" : "pointer",
-            boxShadow:"0 4px 18px rgba(16,185,129,0.35)",
+            boxShadow:"0 4px 18px rgba(13,146,134,0.35)",
             display:"flex", alignItems:"center", justifyContent:"center", gap:10,
             transition:"all 0.2s",
           }}>
@@ -580,9 +580,9 @@ function DoctorMiniCard({ doc }) {
   return (
     <div style={{ background:"white", borderRadius:16, padding:"14px 16px",
       display:"flex", alignItems:"center", gap:14,
-      boxShadow:"0 1px 8px rgba(0,0,0,0.05)", border:"1.5px solid #F0FDF4" }}>
+      boxShadow:"0 1px 8px rgba(0,0,0,0.05)", border:"1.5px solid #eef8f7" }}>
       <div style={{ width:48, height:48, borderRadius:12, overflow:"hidden", flexShrink:0,
-        background:"linear-gradient(135deg,#10B981,#0D9488)",
+        background:"linear-gradient(135deg,#0d9286,#0b6f66)",
         display:"flex", alignItems:"center", justifyContent:"center" }}>
         {doc.profilePhoto
           ? <img src={`${BASE}/${doc.profilePhoto}`} alt={doc.name}
@@ -594,7 +594,7 @@ function DoctorMiniCard({ doc }) {
         <p style={{ fontSize:14, fontWeight:700, color:"#0F172A", margin:"0 0 3px", truncate:true }}>
           Dr. {doc.name}
         </p>
-        <p style={{ fontSize:12, color:"#10B981", fontWeight:600, margin:"0 0 3px" }}>
+        <p style={{ fontSize:12, color:"#0d9286", fontWeight:600, margin:"0 0 3px" }}>
           {doc.specialization}
         </p>
         <p style={{ fontSize:11, color:"#94A3B8", margin:0 }}>
@@ -625,8 +625,8 @@ function DoctorCard({ doc, onSelect }) {
       boxShadow:"0 2px 12px rgba(0,0,0,0.05)", border:"1.5px solid #F1F5F9",
       display:"flex", flexDirection:"column", transition:"all 0.2s" }}
       onMouseEnter={e => {
-        e.currentTarget.style.boxShadow = "0 8px 32px rgba(16,185,129,0.15)";
-        e.currentTarget.style.borderColor = "#A7F3D0";
+        e.currentTarget.style.boxShadow = "0 8px 32px rgba(13,146,134,0.15)";
+        e.currentTarget.style.borderColor = "#bfe4e0";
         e.currentTarget.style.transform = "translateY(-2px)";
       }}
       onMouseLeave={e => {
@@ -636,15 +636,15 @@ function DoctorCard({ doc, onSelect }) {
       }}>
 
       {/* Photo strip */}
-      <div style={{ height:4, background:"linear-gradient(90deg,#10B981,#0D9488)" }} />
+      <div style={{ height:4, background:"linear-gradient(90deg,#0d9286,#0b6f66)" }} />
 
       <div style={{ padding:18, flex:1 }}>
         {/* Doctor identity */}
         <div style={{ display:"flex", gap:14, marginBottom:14 }}>
           <div style={{ width:56, height:56, borderRadius:14, overflow:"hidden", flexShrink:0,
-            background:"linear-gradient(135deg,#10B981,#0D9488)",
+            background:"linear-gradient(135deg,#0d9286,#0b6f66)",
             display:"flex", alignItems:"center", justifyContent:"center",
-            boxShadow:"0 4px 12px rgba(16,185,129,0.3)" }}>
+            boxShadow:"0 4px 12px rgba(13,146,134,0.3)" }}>
             {doc.profilePhoto
               ? <img src={`${BASE}/${doc.profilePhoto}`} alt={doc.name}
                   style={{ width:"100%", height:"100%", objectFit:"cover" }} />
@@ -656,7 +656,7 @@ function DoctorCard({ doc, onSelect }) {
               margin:"0 0 3px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
               Dr. {doc.name}
             </p>
-            <p style={{ fontSize:12, color:"#10B981", fontWeight:600, margin:"0 0 6px" }}>
+            <p style={{ fontSize:12, color:"#0d9286", fontWeight:600, margin:"0 0 6px" }}>
               {doc.specialization}
             </p>
             {/* Stars */}
@@ -684,8 +684,8 @@ function DoctorCard({ doc, onSelect }) {
             <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
               <span style={{ fontSize:12 }}>📅</span>
               {availDays.map(d => (
-                <span key={d} style={{ padding:"2px 8px", background:"#F0FDF4",
-                  color:"#065F46", borderRadius:6, fontSize:11, fontWeight:600 }}>
+                <span key={d} style={{ padding:"2px 8px", background:"#eef8f7",
+                  color:"#0b6f66", borderRadius:6, fontSize:11, fontWeight:600 }}>
                   {d}
                 </span>
               ))}
@@ -706,15 +706,15 @@ function DoctorCard({ doc, onSelect }) {
           onClick={() => onSelect(doc)}
           style={{
             width:"100%", padding:"12px", borderRadius:12,
-            background:"linear-gradient(135deg,#10B981,#0D9488)",
+            background:"linear-gradient(135deg,#0d9286,#0b6f66)",
             color:"white", border:"none", fontSize:13, fontWeight:700,
             cursor:"pointer", display:"flex", alignItems:"center",
             justifyContent:"center", gap:8,
-            boxShadow:"0 4px 14px rgba(16,185,129,0.3)",
+            boxShadow:"0 4px 14px rgba(13,146,134,0.3)",
             transition:"all 0.15s",
           }}
-          onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 20px rgba(16,185,129,0.45)"}
-          onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 14px rgba(16,185,129,0.3)"}
+          onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 20px rgba(13,146,134,0.45)"}
+          onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 14px rgba(13,146,134,0.3)"}
         >
           <Calendar size={15} /> Book Appointment
         </button>
