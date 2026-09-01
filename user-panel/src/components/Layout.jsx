@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Home, Activity, Calendar, Video,
-  FileText, FileCheck, MessageSquare,
+  FileText, FileCheck,
   Settings, LogOut, Heart, ChevronRight,
   Bell, Search, AlertCircle, User,
 } from "lucide-react";
@@ -18,11 +18,10 @@ const NAV_ITEMS = [
   { id:"video",         label:"Video Consultation", icon:Video         },
   { id:"records",       label:"Medical Records",    icon:FileText      },
   { id:"prescriptions", label:"Prescriptions",      icon:FileCheck     },
-  { id:"messages",      label:"Messages",           icon:MessageSquare },
   { id:"settings",      label:"Settings",           icon:Settings      },
 ];
 
-const PROTECTED = ["appointments","symptoms","video","records","prescriptions","messages"];
+const PROTECTED = ["appointments","symptoms","video","records","prescriptions"];
 
 export default function Layout({
   children,
@@ -320,6 +319,5 @@ const PAGE_TITLES = {
   records:      "Medical Records",
   recordDetails:"Record Details",
   prescriptions:"Prescriptions",
-  messages:     "Messages",
   settings:     "Settings",
 };
