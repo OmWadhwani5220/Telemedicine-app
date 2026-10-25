@@ -5,6 +5,7 @@ import AppointmentsCard from "../components/AppointmentsCard";
 import NextAppointmentCard from "../components/NextAppointmentCard";
 import AnalyticsCard from "../components/AnalyticsCard";
 import ImportantUpdatesCard from "../components/ImportantUpdatesCard";
+
 import {
   fetchDoctorProfile,
   fetchTodayAppointments,
@@ -14,6 +15,7 @@ import {
 export default function Dashboard() {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
+
   if (!token || role !== "doctor") {
     window.location.href = "http://localhost:5173/login";
     return null;
@@ -28,11 +30,16 @@ export default function Dashboard() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [profileRes, apptRes, analyticsRes] = await Promise.all([
+        const [
+          profileRes,
+          apptRes,
+          analyticsRes,
+        ] = await Promise.all([
           fetchDoctorProfile(),
           fetchTodayAppointments(),
           fetchMonthlyAnalytics(),
         ]);
+
         setDoctor(profileRes);
         setTodayAppointments(apptRes.appointments || []);
         setAnalyticsData(analyticsRes);
@@ -42,67 +49,158 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
+
     load();
   }, []);
 
-  // Next upcoming appointment = first pending or confirmed
-  const nextAppointment = todayAppointments.find(
-    (a) => a.status === "pending" || a.status === "confirmed"
-  ) || null;
+  const nextAppointment =
+    todayAppointments.find(
+      (appointment) =>
+        appointment.status === "pending" ||
+        appointment.status === "confirmed"
+    ) || null;
 
   const handleAppointmentUpdate = (updatedAppt) => {
     setTodayAppointments((prev) =>
-      prev.map((a) =>
-        a.appointmentId === updatedAppt.appointmentId ? updatedAppt : a
+      prev.map((appointment) =>
+        appointment.appointmentId === updatedAppt.appointmentId
+          ? updatedAppt
+          : appointment
       )
     );
   };
 
+  /*
+   * Existing update content is preserved.
+   * No fake live data is introduced.
+   */
   const updatesData = [
     {
       category: "Research",
       date: "23.10.2023",
-      title: "New managing chronic inflammation with psoriasis",
-      preview: "Medical News Today has published an article about a new method of chronic inflammation management in psoriasis.",
+      title:
+        "New managing chronic inflammation with psoriasis",
+      preview:
+        "Medical News Today has published an article about a new method of chronic inflammation management in psoriasis.",
     },
     {
       category: "Clinic",
       date: "23.10.2023",
       title: "Updated database",
-      preview: "It will be updated on October 24-25. This may lead to slight slowdown in the program.",
+      preview:
+        "It will be updated on October 24-25. This may lead to slight slowdown in the program.",
     },
     {
       category: "Ministry of Health",
       date: "20.10.2023",
-      title: "CoronaVac approved for emergency use",
-      preview: "The Ministry of Health has approved Sinovac's CoronaVac vaccine for emergency use.",
+      title:
+        "CoronaVac approved for emergency use",
+      preview:
+        "The Ministry of Health has approved Sinovac's CoronaVac vaccine for emergency use.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-100 relative">
+    <div className="min-h-screen bg-[#f5f8f8]">
+
+      {/* Sidebar */}
       <Sidebar
         doctor={doctor}
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
       />
-      <div className={`transition-all duration-300 ${isExpanded ? "ml-0" : "ml-20"} p-8`}>
-        <WelcomeCard
-          doctor={doctor}
-          appointmentsToday={todayAppointments.length}
-          loading={loading}
-        />
-        <div className="mt-6 flex gap-6 flex-wrap">
-          <AppointmentsCard appointments={todayAppointments} loading={loading} />
-          <NextAppointmentCard
-            appointment={nextAppointment}
+
+      {/* Main Content */}
+      <main
+        className={`
+          min-h-screen
+          transition-all
+          duration-300
+          ease-in-out
+          ${isExpanded ? "ml-64" : "ml-[76px]"}
+        `}
+      >
+        <div className="max-w-[1500px] mx-auto px-5 py-6 md:px-7 lg:px-8">
+
+          {/* -----------------------------------------
+              PAGE HEADER
+          ----------------------------------------- */}
+          <div className="flex items-center justify-between mb-5">
+
+            <div>
+
+              <h2 className="text-xl font-semibold text-teal-600 mt-1">
+                Dashboard
+              </h2>
+            </div>
+
+            <div className="hidden sm:block text-right">
+              <p className="text-xs text-slate-400">
+                Your practice at a glance
+              </p>
+
+              <p className="text-sm font-medium text-slate-600 mt-0.5">
+                Today's overview
+              </p>
+            </div>
+
+          </div>
+
+
+          {/* -----------------------------------------
+              WELCOME
+          ----------------------------------------- */}
+          <WelcomeCard
+            doctor={doctor}
+            appointmentsToday={todayAppointments.length}
             loading={loading}
-            onUpdate={handleAppointmentUpdate}
           />
-          <AnalyticsCard stats={analyticsData} loading={loading} />
-          <ImportantUpdatesCard updates={updatesData} />
+
+
+          {/* -----------------------------------------
+              MAIN DASHBOARD GRID
+          ----------------------------------------- */}
+          <div className="mt-5 grid grid-cols-1 xl:grid-cols-12 gap-5">
+
+            {/* Today's appointments */}
+            <div className="xl:col-span-5 min-w-0">
+              <AppointmentsCard
+                appointments={todayAppointments}
+                loading={loading}
+              />
+            </div>
+
+
+            {/* Next appointment */}
+            <div className="xl:col-span-7 min-w-0">
+              <NextAppointmentCard
+                appointment={nextAppointment}
+                loading={loading}
+                onUpdate={handleAppointmentUpdate}
+              />
+            </div>
+
+
+            {/* Analytics */}
+            <div className="xl:col-span-7 min-w-0">
+              <AnalyticsCard
+                stats={analyticsData}
+                loading={loading}
+              />
+            </div>
+
+
+            {/* Updates */}
+            <div className="xl:col-span-5 min-w-0">
+              <ImportantUpdatesCard
+                updates={updatesData}
+              />
+            </div>
+
+          </div>
+
         </div>
-      </div>
+      </main>
     </div>
   );
 }
