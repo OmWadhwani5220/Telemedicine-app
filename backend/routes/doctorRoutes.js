@@ -26,7 +26,7 @@ const upload = multer({ storage });
 router.post("/register", registerDoctor);
 router.post("/login", loginDoctor);
 router.post("/profile/:id", upload.fields([{ name: "profilePhoto" }, { name: "medicalLicense" }, { name: "identityProof" }]), createDoctorProfile);
-router.get("/profile", getDoctorProfile);
+router.get("/profile", protect, getDoctorProfile);
 
 // Dashboard & Appointments
 router.get("/appointments/today", protect, getTodayAppointments);

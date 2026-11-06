@@ -53,15 +53,21 @@ export const loginDoctor = async (req, res) => {
 
 export const getDoctorProfile = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: "No token provided" });
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const doctor = await Doctor.findById(decoded.id).select("-password");
-    if (!doctor) return res.status(404).json({ message: "Doctor profile not found" });
+    const doctor = await Doctor.findById(req.user.doctorId).select("-password");
+
+    if (!doctor) {
+      return res.status(404).json({
+        message: "Doctor profile not found",
+      });
+    }
+
     res.status(200).json(doctor);
   } catch (error) {
-    res.status(401).json({ message: "Invalid or expired token" });
+    console.error("Get doctor profile error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
 
