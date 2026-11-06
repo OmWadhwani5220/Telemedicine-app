@@ -1,0 +1,105 @@
+disease,symptom_1,symptom_2,symptom_3,symptom_4,symptom_5,symptom_6,symptom_7,symptom_8,symptom_9,symptom_10
+Fungal Infection,itching,skin rash,nodal skin eruptions,dischromic patches,skin peeling,redness of skin,cracked skin,,,
+Acne,pus filled pimples,blackheads,skin rash,redness of skin,scarring,oily skin,skin inflammation,,,
+Psoriasis,skin rash,silver like dusting,skin peeling,small dents in nails,itching,joint pain,redness of skin,dry skin,,
+Impetigo,skin rash,blister,red sore around nose,yellow crust ooze,itching,fluid filled blisters,swollen lymph nodes,,,
+Allergy,itching,skin rash,sneezing,runny nose,watery eyes,itchy eyes,swelling,breathlessness,continuous sneezing,
+Drug Reaction,skin rash,itching,swelling,fever,nausea,breathlessness,burning sensation on skin,joint pain,,
+Chicken Pox,itching,skin rash,blister,fever,fatigue,loss of appetite,headache,swollen lymph nodes,stomach pain,
+Common Cold,runny nose,sneezing,sore throat,cough,congestion,mild fever,headache,body aches,fatigue,watery eyes
+Flu,high fever,body aches,fatigue,chills,headache,cough,sore throat,runny nose,sweating,loss of appetite
+Pneumonia,cough,high fever,breathlessness,chest pain,fatigue,chills,sweating,nausea,confusion,
+Bronchial Asthma,breathlessness,wheezing,cough,chest tightness,shortness of breath,fatigue,difficulty sleeping,,,
+Tuberculosis,cough,weight loss,night sweats,fatigue,fever,loss of appetite,coughing up blood,chest pain,breathlessness,
+GERD,acidity,indigestion,chest discomfort,nausea,vomiting,stomach pain,belching,difficulty swallowing,,
+Gastroenteritis,vomiting,diarrhea,stomach pain,nausea,fever,dehydration,cramps,loss of appetite,,
+Peptic Ulcer Disease,stomach pain,acidity,indigestion,nausea,vomiting,loss of appetite,bloody stool,passage of gases,,
+Chronic Cholestasis,itching,yellowish skin,dark urine,pale stools,fatigue,abdominal pain,xanthomas on skin,bone pain,,
+Hemorrhoids (Piles),pain in anal region,irritation in anus,bloody stool,pain during bowel movements,swelling in anal region,itching in anal region,passage of gases,,,
+Hepatitis A,yellowish skin,yellowing of eyes,dark urine,nausea,vomiting,abdominal pain,fatigue,loss of appetite,clay coloured stools,low grade fever
+Hepatitis B,yellowish skin,yellowing of eyes,dark urine,fatigue,abdominal pain,nausea,joint pain,loss of appetite,right upper abdominal tenderness,swelling of stomach
+Hepatitis C,fatigue,dark urine,yellowish skin,nausea,abdominal pain,loss of appetite,muscle pain,joint pain,brain fog,
+Hepatitis D,yellowish skin,yellowing of eyes,dark urine,fatigue,abdominal pain,nausea,rapid weight loss,severe liver tenderness,confusion,
+Hepatitis E,yellowish skin,yellowing of eyes,frothy dark urine,nausea,vomiting,abdominal pain,loss of appetite,itching,high fever,
+Alcoholic Hepatitis,yellowish skin,yellowing of eyes,abdominal pain,swelling of stomach,nausea,vomiting,easy bruising,tremors,confusion,loss of appetite
+Jaundice,yellowish skin,yellowing of eyes,dark urine,itching,fatigue,loss of appetite,nausea,abdominal pain,pale stools,weight loss
+Malaria,fever,chills,sweating,headache,nausea,vomiting,muscle pain,fatigue,shivering,high fever
+Dengue,high fever,severe headache,pain behind eyes,joint pain,muscle pain,skin rash,nausea,vomiting,fatigue,loss of appetite
+Typhoid,high fever,headache,stomach pain,loss of appetite,nausea,constipation,diarrhea,fatigue,chills,sweating
+AIDS,fatigue,weight loss,fever,night sweats,swollen lymph nodes,recurrent infections,skin rash,muscle pain,joint pain,diarrhea
+Heart Attack,chest pain,breathlessness,sweating,nausea,pain in left arm,dizziness,fatigue,irregular heartbeat,,
+Hypertension,headache,dizziness,chest pain,breathlessness,blurred and distorted vision,nausea,nosebleed,irregular heartbeat,,
+Varicose Veins,swollen legs,muscle pain,painful walking,fatigue,itching in legs,cramps,skin discolouration on legs,,,
+Diabetes,excessive hunger,excessive thirst,frequent urination,fatigue,blurred and distorted vision,weight loss,slow healing wounds,irregular sugar level,tingling in hands and feet,
+Hypoglycemia,excessive hunger,sweating,trembling,dizziness,confusion,rapid heartbeat,irritability,weakness,blurred and distorted vision,
+Hypothyroidism,fatigue,weight gain,cold hands and feet,brittle nails,depression,constipation,muscle weakness,dry skin,hair thinning,mood swings
+Hyperthyroidism,weight loss,rapid heartbeat,sweating,nervousness,trembling,fatigue,irritability,difficulty sleeping,muscle weakness,frequent bowel movements
+Anemia,fatigue,pale skin,weakness,breathlessness,dizziness,cold hands and feet,headache,chest pain,brittle nails,
+Arthritis,joint pain,swelling joints,joint stiffness,reduced mobility,fatigue,redness around joints,warmth around joints,,,
+Osteoarthritis,joint pain,joint stiffness,reduced mobility,knee pain,hip joint pain,swelling joints,painful walking,movement stiffness,,
+Cervical Spondylosis,neck pain,back pain,weakness in limbs,dizziness,loss of balance,headache,stiff neck,tingling in hands and feet,,
+Migraine,headache,nausea,vomiting,sensitivity to light,sensitivity to sound,blurred and distorted vision,dizziness,fatigue,neck pain,
+Paralysis (Brain Hemorrhage),weakness of one body side,loss of balance,weakness in limbs,headache,confusion,slurred speech,blurred and distorted vision,nausea,vomiting,
+Vertigo (BPPV),dizziness,spinning movements,loss of balance,nausea,vomiting,headache,difficulty walking,,,
+Depression,persistent sadness,loss of interest,fatigue,sleep disturbance,difficulty concentrating,hopelessness,loss of appetite,guilt/worthlessness,suicidal thoughts,mood swings
+Anxiety Disorder,excessive worry,restlessness,rapid heartbeat,sweating,trembling,difficulty concentrating,panic attacks,sleep disturbance,irritability,muscle tension
+Chronic Fatigue Syndrome,severe fatigue,unrefreshing sleep,brain fog,muscle pain,joint pain,headache,sore throat,memory issues,dizziness,low energy
+Urinary Tract Infection,burning micturition,frequent urination,bladder discomfort,foul smell of urine,cloudy urine,continuous feel of urine,pelvic pain,fever,,
+Acidity (Hyperacidity),acidity,heartburn,chest discomfort,sour belching,indigestion,nausea,stomach pain,throat irritation,,
+Loose Motions (Acute Diarrhea),watery stools,frequent bowel movements,stomach cramps,nausea,dehydration,weakness,loss of appetite,urgency to defecate,,
+Irritable Bowel Syndrome (IBS),stomach pain,bloating,constipation,diarrhea,passage of gases,cramping,mucus in stool,urgency to defecate,abdominal discomfort,
+Appendicitis,severe abdominal pain,pain around navel,loss of appetite,nausea,vomiting,fever,abdominal rigidity,pain worsening on movement,,
+Celiac Disease,diarrhea,bloating,abdominal pain,fatigue,weight loss,iron deficiency,skin rash,headache,brain fog,mouth ulcers
+Chronic Constipation,infrequent bowel movements,hard stools,straining during defecation,bloating,abdominal discomfort,passage of gases,feeling of incomplete evacuation,,,
+Food Poisoning,nausea,vomiting,diarrhea,stomach cramps,fever,chills,weakness,dehydration,headache,
+Gallstones,severe upper abdominal pain,pain radiating to back,nausea,vomiting,fever,yellowish skin,indigestion,clay coloured stools,,
+Lactose Intolerance,bloating,diarrhea,stomach cramps,passage of gases,nausea,abdominal discomfort,rumbling stomach,,,
+Pancreatitis,severe upper abdominal pain,pain radiating to back,nausea,vomiting,fever,tenderness on touching abdomen,rapid heartbeat,weight loss,,
+PCOD,irregular periods,weight gain,acne,excessive hair growth,multiple ovarian cysts,insulin resistance,pelvic discomfort,oily skin,,
+PCOS,irregular periods,weight gain,acne,excessive hair growth,hair thinning,mood swings,difficulty conceiving,elevated androgen levels,fatigue,sleep apnea
+Endometriosis,severe menstrual cramps,pelvic pain,painful intercourse,heavy periods,fatigue,pain during bowel movements,bloating,lower back pain,spotting between periods,
+Menorrhagia (Heavy Periods),heavy menstrual bleeding,prolonged periods,passing blood clots,abdominal cramps,fatigue,lower back pain,anemia symptoms,pale skin,,
+Dysmenorrhea (Painful Periods),severe menstrual cramps,lower abdominal pain,lower back pain,nausea,vomiting,headache,diarrhea,fatigue,,
+Preeclampsia,high blood pressure,swelling of hands and face,severe headache,blurred and distorted vision,upper abdominal pain,rapid weight gain,nausea,decreased urine output,,
+Vaginitis,vaginal discharge,vaginal itching,burning sensation in vagina,redness of vaginal area,swelling in vaginal area,painful intercourse,foul smell vaginal discharge,,,
+Ovarian Cyst,pelvic pain,bloating,irregular periods,pain during intercourse,frequent urination,nausea,lower back pain,difficulty conceiving,,
+Sepsis,high fever,chills,rapid heartbeat,rapid breathing,confusion,extreme fatigue,low blood pressure,pale skin,decreased urine output,
+Cellulitis,redness of skin,skin warm to touch,swelling,pain in affected area,fever,skin tenderness,blisters on skin,,,
+Tonsillitis,sore throat,swollen tonsils,difficulty swallowing,fever,headache,ear pain,bad breath,swollen lymph nodes,,
+Sinusitis,facial pain and pressure,nasal congestion,thick nasal discharge,headache,postnasal drip,loss of smell,sore throat,fever,fatigue,
+Urethritis,burning micturition,frequent urination,discharge from urethra,pain in urethra,pelvic pain,fever,painful intercourse,,,
+Ear Infection (Otitis Media),ear pain,ear pressure,fever,hearing difficulty,fluid from ear,headache,loss of balance,irritability,,
+Conjunctivitis (Pink Eye),redness in eyes,watery eyes,itchy eyes,discharge from eyes,swollen eyelids,sensitivity to light,gritty feeling in eyes,,,
+Mumps,swollen salivary glands,jaw pain,fever,headache,fatigue,loss of appetite,muscle pain,difficulty chewing,,
+Measles,high fever,skin rash,runny nose,cough,watery eyes,sensitivity to light,white spots inside mouth,loss of appetite,,
+Obesity,excessive weight gain,breathlessness on exertion,fatigue,joint pain,snoring,excessive sweating,back pain,sleep disturbance,low self esteem,
+Vitamin D Deficiency,bone pain,muscle weakness,fatigue,depression,hair loss,impaired wound healing,back pain,mood changes,,
+Iron Deficiency,fatigue,weakness,pale skin,brittle nails,cold hands and feet,headache,dizziness,shortness of breath,craving non food items,
+Dehydration,excessive thirst,dry mouth,dark urine,dizziness,headache,fatigue,decreased urine output,confusion,rapid heartbeat,
+Heat Stroke,high body temperature,hot dry skin,confusion,rapid heartbeat,nausea,vomiting,headache,loss of consciousness,muscle weakness,
+Epilepsy,seizures,brief loss of consciousness,muscle stiffness,confusion after episode,staring spells,jerking movements,temporary confusion,fear or anxiety before seizure,,
+Insomnia,difficulty falling asleep,frequent waking at night,early morning waking,fatigue,difficulty concentrating,irritability,daytime sleepiness,mood disturbances,headache,
+Bipolar Disorder,extreme mood swings,periods of high energy,periods of deep depression,reduced need for sleep,impulsive behaviour,racing thoughts,grandiosity,poor judgement,risky behaviour,irritability
+ADHD,difficulty concentrating,impulsiveness,hyperactivity,forgetfulness,disorganisation,easily distracted,restlessness,mood swings,difficulty completing tasks,low frustration tolerance
+Gout,severe joint pain,swelling in big toe,redness around joint,warmth around joint,joint tenderness,limited range of motion,recurring attacks,ankle or knee pain,,
+Sciatica,lower back pain,pain radiating down leg,numbness in leg,tingling in leg,weakness in leg,pain worsening on sitting,burning sensation in leg,difficulty walking,,
+Fibromyalgia,widespread muscle pain,fatigue,sleep disturbance,brain fog,headache,sensitivity to touch,mood disturbances,bowel problems,morning stiffness,numbness in hands
+Frozen Shoulder,shoulder pain,restricted shoulder movement,stiffness in shoulder,pain worsening at night,difficulty raising arm,pain radiating to neck,reduced range of motion,,,
+Plantar Fasciitis,heel pain,pain worse in morning,pain after long standing,foot arch pain,stiffness in foot,swelling in heel,pain after exercise,,,
+Kidney Stones,severe back pain,pain radiating to groin,painful urination,blood in urine,nausea,vomiting,frequent urination,cloudy urine,fever,
+Chronic Kidney Disease,fatigue,swelling in ankles,decreased urine output,breathlessness,nausea,loss of appetite,confusion,muscle cramps,high blood pressure,pale skin
+Prostatitis,pelvic pain,painful urination,frequent urination,pain in lower back,pain in groin,difficulty urinating,fever,chills,painful ejaculation,
+Angina,chest pain on exertion,chest tightness,breathlessness,pain radiating to left arm,sweating,nausea,dizziness,chest pressure,pain relieved by rest,
+Atrial Fibrillation,irregular heartbeat,rapid heartbeat,breathlessness,fatigue,dizziness,chest discomfort,weakness,palpitations,,
+Deep Vein Thrombosis (DVT),swelling in one leg,pain in leg,warmth in affected leg,redness in leg,cramps,leg heaviness,skin discolouration on legs,,,
+Eczema,itching,dry skin,skin rash,redness of skin,skin inflammation,cracked skin,fluid filled blisters,skin thickening,skin discolouration,
+Rosacea,redness on face,visible blood vessels on face,skin bumps,swollen skin,eye irritation,burning sensation on skin,skin tenderness,,,
+Shingles (Herpes Zoster),painful skin rash,blister,burning sensation on skin,itching,fever,headache,sensitivity to touch,fatigue,tingling before rash,
+Urticaria (Hives),skin rash,itching,swelling,redness of skin,burning sensation on skin,welts on skin,angioedema,,,
+Seborrheic Dermatitis,flaky skin,skin rash on scalp,redness of skin,itching,greasy skin patches,dandruff,hair loss,,,
+Glaucoma,gradual vision loss,eye pain,blurred and distorted vision,halos around lights,redness in eyes,headache,nausea,tunnel vision,,
+Cataracts,cloudy or blurred vision,sensitivity to light,faded colour vision,poor night vision,double vision,frequent changes in glasses,halos around lights,,,
+Chronic Obstructive Pulmonary Disease (COPD),breathlessness,chronic cough,wheezing,chest tightness,excess mucus production,fatigue,frequent respiratory infections,cyanosis,weight loss,
+Pleuritis (Pleurisy),sharp chest pain on breathing,shortness of breath,cough,fever,shoulder pain,chest tenderness,pain worsening on deep breath,,,
+Thyroid Nodule / Early Thyroid Cancer,lump in neck,difficulty swallowing,hoarseness,neck pain,swollen lymph nodes in neck,persistent cough,difficulty breathing,,,
+Colorectal Cancer (Early Signs),bloody stool,change in bowel habits,stomach pain,unexplained weight loss,fatigue,iron deficiency,feeling of incomplete evacuation,narrow stools,,

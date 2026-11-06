@@ -132,8 +132,9 @@ export const getMyAppointments = async () => {
     return [];
   }
 };
+
 /* ─────────────────────────────────────────
-   SLOTS  (new)
+   SLOTS
 ───────────────────────────────────────── */
 export const getAvailableSlots = async (doctorId, date) => {
   try {
@@ -146,5 +147,37 @@ export const getAvailableSlots = async (doctorId, date) => {
   } catch (err) {
     console.error("Get slots error:", err);
     return null;
+  }
+};
+
+/* ─────────────────────────────────────────
+   AI SYMPTOM CHECKER
+   Calls the FastAPI ai-service directly on port 8001.
+   No auth header needed — it's an internal service.
+───────────────────────────────────────── */
+const AI_SERVICE_URL = "http://localhost:8001";
+
+export const checkSymptoms = async (payload) => {
+  try {
+    const res = await fetch(`${AI_SERVICE_URL}/predict`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    // 422 means the LLM couldn't extract recognisable symptoms
+    if (res.status === 422) {
+      const err = await res.json();
+      return { detail: err.detail || "Could not extract symptoms from your description." };
+    }
+
+    if (!res.ok) {
+      return { detail: "AI service error. Please try again." };
+    }
+
+    return res.json();
+  } catch (err) {
+    console.error("checkSymptoms error:", err);
+    return { detail: "Could not reach the AI service. Make sure it is running on port 8001." };
   }
 };
