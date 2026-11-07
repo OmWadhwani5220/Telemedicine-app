@@ -1,12 +1,19 @@
+
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    mongoose.connect("mongodb://localhost:27017/telemed");
+    const mongoURI = process.env.MONGO_URL;
 
-    console.log("MongoDB Connected");
+    if (!mongoURI) {
+      throw new Error("MONGO_URL is missing from environment variables");
+    }
+
+    await mongoose.connect(mongoURI);
+
+    console.log("MongoDB Atlas Connected Successfully");
   } catch (err) {
-    console.error(err);
+    console.error("MongoDB Connection Error:", err.message);
     process.exit(1);
   }
 };
