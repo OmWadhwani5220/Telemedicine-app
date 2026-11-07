@@ -51,28 +51,31 @@ export default function Login() {
       localStorage.setItem("role", data.user.role);
 
       // Role-based redirect
-      if (data.user.role === "patient") {
-        setTimeout(() => {
-          const redirectURL = `http://localhost:5174/?token=${data.token}&name=${encodeURIComponent(data.user.name)}&role=${data.user.role}`;
-          console.log("🚀 Redirecting to:", redirectURL); // debug
-          window.location.href = redirectURL;
-        }, 100);
+      
+const panelURLs = {
+  patient: import.meta.env.VITE_PATIENT_PANEL_URL,
+  doctor: import.meta.env.VITE_DOCTOR_PANEL_URL,
+  admin: import.meta.env.VITE_ADMIN_PANEL_URL,
+};
 
-      } else if (data.user.role === "doctor") {
-        setTimeout(() => {
-          window.location.href = `http://localhost:5175/?token=${data.token}&name=${encodeURIComponent(data.user.name)}&role=${data.user.role}`;
-          console.log("🚀 Redirecting to:", redirectURL); // debug
-        }, 100);
-      }
-      else if (data.user.role === "admin") {
-        setTimeout(() => {
-          const redirectURL = `http://localhost:5176/?token=${data.token}&name=${encodeURIComponent(data.user.name)}&role=${data.user.role}`;
-          console.log("🚀 Redirecting to:", redirectURL); // debug
-          window.location.href = redirectURL;
-        }, 100);
-      } else {
-        navigate("/login");
-      }
+const role = data.user.role;
+const panelURL = panelURLs[role];
+
+if (panelURL) {
+  const redirectURL = new URL(panelURL);
+
+  redirectURL.searchParams.set("token", data.token);
+  redirectURL.searchParams.set("name", data.user.name);
+  redirectURL.searchParams.set("role", role);
+
+  console.log("Redirecting to:", redirectURL.toString());
+
+  setTimeout(() => {
+    window.location.href = redirectURL.toString();
+  }, 100);
+} else {
+  navigate("/login");
+}
 
     } catch (err) {
       console.error(err);
