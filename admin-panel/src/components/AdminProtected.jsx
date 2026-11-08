@@ -7,7 +7,7 @@ const AdminProtected = ({ children }) => {
 
   useEffect(() => {
     if (!token || role !== "admin") {
-      window.location.href = "http://localhost:5173/login";
+      window.location.href = "https://telemedicine-app-six-beryl.vercel.app/login";
     }
   }, [token, role]);
 
