@@ -44,7 +44,7 @@ class Boundary extends React.Component {
   }
 }
 
-const LOGIN_URL = "http://localhost:5173/login";
+const LOGIN_URL = "https://telemedicine-app-six-beryl.vercel.app";
 const BACKEND   = "http://localhost:5000";
 
 // Profile is "complete" if name, dob, gender, and bloodGroup are filled

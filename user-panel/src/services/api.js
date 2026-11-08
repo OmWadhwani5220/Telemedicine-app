@@ -14,7 +14,7 @@ const getAuthHeaders = () => {
 const handleResponse = async (res) => {
   if (res.status === 401) {
     localStorage.clear();
-    window.location.href = "https://telemedicine-app-six-beryl.vercel.app/login";
+    window.location.href = "https://telemedicine-app-six-beryl.vercel.app/";
     return null;
   }
   return res.json();
