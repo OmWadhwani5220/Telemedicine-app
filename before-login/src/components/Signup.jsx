@@ -124,7 +124,7 @@ const Signup = () => {
     }
 
     try {
-      const res  = await fetch("http://localhost:5000/api/auth/signup", {
+      const res  = await fetch("https://telemedicine-app-mr3o.onrender.com/api/auth/signup", {
         method: "POST",
         body:   payload,
       });

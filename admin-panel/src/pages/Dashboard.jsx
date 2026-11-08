@@ -31,7 +31,7 @@ export default function Dashboard() {
         return;
       }
 
-      const res = await fetch('http://localhost:5000/api/admin/stats', {
+      const res = await fetch('https://telemedicine-app-mr3o.onrender.com/api/admin/stats', {
         headers: { Authorization: `Bearer ${token}` }
       });
 

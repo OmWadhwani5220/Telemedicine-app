@@ -7,7 +7,7 @@ import {
 
 // ✅ FIX: correct ports
 const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL || "http://localhost:5001";
-const BACKEND_URL   = import.meta.env.VITE_BACKEND_URL   || "http://localhost:5000";
+const BACKEND_URL   = import.meta.env.VITE_BACKEND_URL   || "https://telemedicine-app-mr3o.onrender.com";
 
 const BRAND = "#0d9286";
 const BRAND_DARK = "#0a7a6f";

@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL || "http://localhost:5001";
-const BACKEND_URL   = import.meta.env.VITE_BACKEND_URL   || "http://localhost:5000";
+const BACKEND_URL   = import.meta.env.VITE_BACKEND_URL   || "https://telemedicine-app-mr3o.onrender.com";
 
 const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },

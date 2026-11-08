@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { FileText, Pill, Calendar, RefreshCw, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://telemedicine-app-mr3o.onrender.com";
 
 export function Prescriptions({ navigateTo }) {
   const [prescriptions, setPrescriptions] = useState([]);

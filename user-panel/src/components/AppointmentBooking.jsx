@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { getVerifiedDoctors, bookAppointment, getAvailableSlots } from "../services/api";
 
-const BASE = "http://localhost:5000";
+const BASE = "https://telemedicine-app-mr3o.onrender.com";
 
 /* ── helpers ── */
 const toDisplayTime = (t) => {

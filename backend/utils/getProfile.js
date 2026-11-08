@@ -2,7 +2,7 @@ export const getProfile = async () => {
   const token = localStorage.getItem("token");
 
   try {
-    const res = await fetch("http://localhost:5000/api/auth/profile", {
+    const res = await fetch("https://telemedicine-app-mr3o.onrender.com/api/auth/profile", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,

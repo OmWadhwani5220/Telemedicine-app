@@ -9,7 +9,7 @@ export default function ViewUsers() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/auth/all");
+        const res = await fetch("https://telemedicine-app-mr3o.onrender.com/api/auth/all");
         const data = await res.json();
         setUsers(data.users || []);
       } catch (err) {
@@ -42,9 +42,9 @@ export default function ViewUsers() {
                 <td>{u.role}</td>
                 <td>{u.verified ? "Yes" : "No"}</td>
                 <td>
-                  {u.patientPdf && <a href={`http://localhost:5000/${u.patientPdf}`} target="_blank" rel="noreferrer">Patient PDF</a>}
-                  {u.qualificationPdf && <div><a href={`http://localhost:5000/${u.qualificationPdf}`} target="_blank" rel="noreferrer">Qualification</a></div>}
-                  {u.clinicRegistrationPdf && <div><a href={`http://localhost:5000/${u.clinicRegistrationPdf}`} target="_blank" rel="noreferrer">Clinic</a></div>}
+                  {u.patientPdf && <a href={`https://telemedicine-app-mr3o.onrender.com/${u.patientPdf}`} target="_blank" rel="noreferrer">Patient PDF</a>}
+                  {u.qualificationPdf && <div><a href={`https://telemedicine-app-mr3o.onrender.com/${u.qualificationPdf}`} target="_blank" rel="noreferrer">Qualification</a></div>}
+                  {u.clinicRegistrationPdf && <div><a href={`https://telemedicine-app-mr3o.onrender.com/${u.clinicRegistrationPdf}`} target="_blank" rel="noreferrer">Clinic</a></div>}
                 </td>
               </tr>
             ))}
