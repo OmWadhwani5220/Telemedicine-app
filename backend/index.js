@@ -30,8 +30,8 @@ if (!MONGO_URL) {
 
 const allowedOrigins = [
   "https://telemedicine-app-six-beryl.vercel.app/",
-  "http://localhost:5174",
-  "http://localhost:5175",
+  "https://telemed-user-panel.vercel.app/",
+  "https://telemed-doctor-panel.vercel.app/",
   "http://localhost:5176",
   ...(process.env.FRONTEND_URLS || "")
     .split(",")
