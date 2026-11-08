@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
-// Cookie helper
+// Set login cookie
 function setCookie(name, value, days = 1) {
   const expires = new Date(Date.now() + days * 864e5).toUTCString();
 
@@ -26,6 +26,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Production environment variables
   const API_URL = import.meta.env.VITE_API_URL;
 
   const panelURLs = {
@@ -49,17 +50,20 @@ export default function Login() {
 
     try {
       if (!API_URL) {
-        throw new Error("Backend API URL is not configured.");
+        throw new Error("Backend URL is not configured.");
       }
 
-      const res = await fetch(`${API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify(form)
-      });
+      const res = await fetch(
+        `${API_URL.replace(/\/$/, "")}/api/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify(form)
+        }
+      );
 
       const data = await res.json();
 
@@ -77,7 +81,7 @@ export default function Login() {
       const panelURL = panelURLs[role];
 
       if (!panelURL) {
-        setError("Panel URL is not configured for this account.");
+        setError(`Panel URL is not configured for role: ${role}`);
         return;
       }
 
@@ -88,20 +92,27 @@ export default function Login() {
       localStorage.setItem("role", role);
       localStorage.setItem("name", data.user.name || "");
 
-      // Redirect to the appropriate deployed panel
+      // Create role-based production redirect
       const redirectURL = new URL(panelURL);
 
       redirectURL.searchParams.set("token", data.token);
       redirectURL.searchParams.set("name", data.user.name || "");
       redirectURL.searchParams.set("role", role);
 
-      console.log("Redirecting to:", redirectURL.toString());
+      console.log(
+        "Redirecting to:",
+        redirectURL.toString()
+      );
 
       window.location.replace(redirectURL.toString());
 
     } catch (err) {
       console.error("Login error:", err);
-      setError(err.message || "Server error. Please try again.");
+
+      setError(
+        err.message || "Server error. Please try again."
+      );
+
     } finally {
       setLoading(false);
     }
