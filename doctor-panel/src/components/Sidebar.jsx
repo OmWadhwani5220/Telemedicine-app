@@ -55,7 +55,7 @@ export default function Sidebar({ doctor, isExpanded, setIsExpanded }) {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
-    window.location.href = "https://telemedicine-app-six-beryl.vercel.app/login";
+    window.location.href = "https://telemedicine-app-six-beryl.vercel.app";
   };
 
   const getInitials = (name) => {
