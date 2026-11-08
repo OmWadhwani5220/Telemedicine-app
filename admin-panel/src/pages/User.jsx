@@ -15,7 +15,7 @@ export default function Users() {
     const fetchUsers = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5000/api/admin/users', {
+            const res = await fetch('https://telemedicine-app-mr3o.onrender.com/api/admin/users', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();

@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "https://telemedicine-app-mr3o.onrender.com/api";
 
 export const getAuthHeaders = () => {
   const token = localStorage.getItem("token");

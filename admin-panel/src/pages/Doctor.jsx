@@ -15,12 +15,12 @@ const [loading, setLoading] = useState(true);
 
   // correct format already
   if (filePath.startsWith("uploads/")) {
-    return `http://localhost:5000/${filePath}`;
+    return `https://telemedicine-app-mr3o.onrender.com/${filePath}`;
   }
 
   // fix old full path
   const filename = filePath.split("\\").pop();
-  return `http://localhost:5000/uploads/${filename}`;
+  return `https://telemedicine-app-mr3o.onrender.com/uploads/${filename}`;
 };
 
 
@@ -32,7 +32,7 @@ const [loading, setLoading] = useState(true);
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        "http://localhost:5000/api/admin/doctors",
+        "https://telemedicine-app-mr3o.onrender.com/api/admin/doctors",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -63,7 +63,7 @@ const [loading, setLoading] = useState(true);
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `http://localhost:5000/api/admin/doctor/approve/${id}`,
+      `https://telemedicine-app-mr3o.onrender.com/api/admin/doctor/approve/${id}`,
       {
         method: "PUT",
         headers: {
@@ -95,7 +95,7 @@ const [loading, setLoading] = useState(true);
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `http://localhost:5000/api/admin/doctor/reject/${id}`,
+      `https://telemedicine-app-mr3o.onrender.com/api/admin/doctor/reject/${id}`,
       {
         method: "PUT",
         headers: {
@@ -126,7 +126,7 @@ const [loading, setLoading] = useState(true);
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `http://localhost:5000/api/admin/doctor/${id}`,
+        `https://telemedicine-app-mr3o.onrender.com/api/admin/doctor/${id}`,
         {
           method: "DELETE",
           headers: {

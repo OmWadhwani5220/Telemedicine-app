@@ -23,7 +23,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5000",   # backend
+        "https://telemedicine-app-mr3o.onrender.com",   # backend
         "http://localhost:5001",   # backend alt
         "https://telemedicine-app-six-beryl.vercel.app/",   # before-login / login page
         "https://telemed-user-panel.vercel.app/",   # user panel

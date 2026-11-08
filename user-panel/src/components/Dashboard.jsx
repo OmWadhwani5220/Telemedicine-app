@@ -7,7 +7,7 @@ import {
 import { getPatientProfile, getMyAppointments } from "../services/api";
 import "./Dashboard.css";
 
-const BACKEND_URL = import.meta.env?.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = import.meta.env?.VITE_BACKEND_URL || "https://telemedicine-app-mr3o.onrender.com";
 
 export default function Dashboard({ patientName = "Patient", navigateTo, profileComplete }) {
   const [patient,       setPatient]       = useState(null);
