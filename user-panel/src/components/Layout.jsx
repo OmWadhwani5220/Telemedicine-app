@@ -47,7 +47,7 @@ export default function Layout({
     if (onLogout) { onLogout(); return; }
     try { await fetch("http://localhost:5000/api/auth/logout", { method:"POST", credentials:"include" }); } catch {}
     localStorage.clear();
-    window.location.href = "http://localhost:5173/login";
+    window.location.href = "https://telemedicine-app-six-beryl.vercel.app/login";
   };
 
   const SIDEBAR_W = expanded ? 240 : 64;
