@@ -126,20 +126,32 @@ app.get("/api/users", async (req, res) => {
 
 /* CONNECT DATABASE AND START SERVER */
 
+
 const startServer = async () => {
   try {
     await mongoose.connect(MONGO_URL);
 
     console.log("MongoDB Atlas Connected Successfully");
 
+    // Database diagnostics
+    console.log("DATABASE NAME:", mongoose.connection.name);
+    console.log("SIGNUP COLLECTION:", Signup.collection.name);
+
+    const signupCount = await Signup.countDocuments();
+
+    console.log("SIGNUP DOCUMENT COUNT:", signupCount);
+
+    // Start server
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server listening on port ${PORT}`);
     });
+
   } catch (err) {
     console.error("MongoDB connection error:", err.message);
     process.exit(1);
   }
 };
+
 
 console.log(
   "JWT_SECRET loaded:",
