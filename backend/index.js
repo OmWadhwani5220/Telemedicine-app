@@ -32,7 +32,7 @@ const allowedOrigins = [
   "https://telemedicine-app-six-beryl.vercel.app/",
   "https://telemed-user-panel.vercel.app/",
   "https://telemed-doctor-panel.vercel.app/",
-  "http://localhost:5176",
+  "https://telemed-admin-panel.vercel.app/",
   ...(process.env.FRONTEND_URLS || "")
     .split(",")
     .map(url => url.trim())
