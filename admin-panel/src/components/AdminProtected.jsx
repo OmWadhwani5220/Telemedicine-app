@@ -7,7 +7,7 @@ const AdminProtected = ({ children }) => {
 
   useEffect(() => {
     if (!token || role !== "admin") {
-      window.location.href = "https://telemedicine-app-six-beryl.vercel.app/l";
+      window.location.href = "https://telemedicine-app-six-beryl.vercel.app/";
     }
   }, [token, role]);
 

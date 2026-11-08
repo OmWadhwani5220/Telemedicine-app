@@ -17,7 +17,7 @@ export default function Dashboard() {
   const role = localStorage.getItem("role");
 
   if (!token || role !== "doctor") {
-    window.location.href = "https://telemedicine-app-six-beryl.vercel.app";
+    window.location.href = "https://telemedicine-app-six-beryl.vercel.app/";
     return null;
   }
 
