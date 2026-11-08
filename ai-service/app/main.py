@@ -25,7 +25,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5000",   # backend
         "http://localhost:5001",   # backend alt
-        "http://localhost:5173",   # before-login / login page
+        "https://telemedicine-app-six-beryl.vercel.app/",   # before-login / login page
         "http://localhost:5174",   # user panel
         "http://localhost:5175",   # doctor panel (in case)
         "http://localhost:5176",   # admin panel (in case)

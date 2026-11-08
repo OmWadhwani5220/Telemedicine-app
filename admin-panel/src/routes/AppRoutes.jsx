@@ -31,7 +31,7 @@ const AdminRoute = ({ children }) => {
     return children;
   }
 
-  return <ExternalRedirect to="https://telemedicine-app-six-beryl.vercel.app" />;
+  return <ExternalRedirect to="https://telemedicine-app-six-beryl.vercel.app/" />;
 };
 
 const AppRoutes = () => {
@@ -52,7 +52,7 @@ const AppRoutes = () => {
         element={
           isAdmin
             ? <Navigate to="/admin/dashboard" replace />
-            : <ExternalRedirect to="https://telemedicine-app-six-beryl.vercel.app" />
+            : <ExternalRedirect to="https://telemedicine-app-six-beryl.vercel.app/" />
         }
       />
 
