@@ -26,13 +26,8 @@ venv/
 env/
 ENV/
 
-# ── ML Artifacts (large binary files — regenerate with train.py) ──────────
-artifacts/model.pkl
-artifacts/label_encoder.pkl
-artifacts/symptom_columns.pkl
-artifacts/*.pkl
-artifacts/*.joblib
 
+artifacts/model.pkl
 # ── Jupyter ───────────────────────────────────────────────────────────────
 .ipynb_checkpoints/
 *.ipynb
