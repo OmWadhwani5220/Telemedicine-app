@@ -11,10 +11,9 @@ import adminRoutes from "./routes/adminRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import doctorRoutes from "./routes/doctorRoutes.js";
 import meetingRoutes from "./routes/meetingRoutes.js";
+
 import Contact from "./models/Contact.js";
 import Signup from "./models/Signup.js";
-
-import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 
 dotenv.config();
 
@@ -27,37 +26,29 @@ if (!MONGO_URL) {
   process.exit(1);
 }
 
-
 /* CORS CONFIGURATION */
 
 const allowedOrigins = [
-  "https://telemedicine-app-six-beryl.vercel.app",
-  "https://telemed-user-panel.vercel.app",
-  "https://telemed-doctor-panel.vercel.app",
-  "https://telemed-admin-panel.vercel.app",
-
+  "https://telemedicine-app-six-beryl.vercel.app/",
+  "https://telemed-user-panel.vercel.app/",
+  "https://telemed-doctor-panel.vercel.app/",
+  "https://telemed-admin-panel.vercel.app/",
   ...(process.env.FRONTEND_URLS || "")
     .split(",")
     .map(url => url.trim())
     .filter(Boolean)
-].map(url => url.replace(/\/+$/, ""));
+];
 
-const corsOptions = {
+app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin.replace(/\/+$/, ""))) {
+    if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
-    console.error("CORS blocked origin:", origin);
     return callback(new Error("Not allowed by CORS: " + origin));
   },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  optionsSuccessStatus: 204
-};
-
-app.use(cors(corsOptions));
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -120,7 +111,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/meetings", meetingRoutes);
-app.use("/api/prescriptions", prescriptionRoutes);
 
 /* ALL USERS */
 
@@ -139,9 +129,7 @@ app.get("/api/users", async (req, res) => {
 
 const startServer = async () => {
   try {
-    await mongoose.connect(MONGO_URL, {
-  dbName: "telemed"
-});
+    await mongoose.connect(MONGO_URL);
 
     console.log("MongoDB Atlas Connected Successfully");
 
