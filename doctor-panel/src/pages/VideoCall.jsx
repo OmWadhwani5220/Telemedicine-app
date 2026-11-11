@@ -7,7 +7,7 @@ import {
   Plus, Trash2, Save, FileText, ChevronDown, ChevronUp,
 } from "lucide-react";
 
-const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL || "http://localhost:5001";
+const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL || "https://telemed-video-server.onrender.com";
 const BACKEND_URL   = import.meta.env.VITE_BACKEND_URL   || "https://telemedicine-app-mr3o.onrender.com";
 
 const ICE_SERVERS = [
@@ -16,8 +16,11 @@ const ICE_SERVERS = [
   { urls: "turn:relay1.expressturn.com:3478", username: "ef2Z7F1ZKX6Z4Z7U", credential: "E4c3R9W8" },
 ];
 
-const generateRoomId   = () => Math.random().toString(36).substring(2, 8).toUpperCase();
-const generatePassword = () => Math.random().toString(36).substring(2, 10);
+const generateRoomId = () =>
+  Math.random().toString(36).substring(2, 8).toUpperCase();
+
+const generatePassword = () =>
+  Math.random().toString(36).substring(2, 10);
 
 const emptyPrescription = () => ({
   diagnosis:    "",
@@ -202,7 +205,7 @@ export default function VideoCall() {
       });
 
       if (!connected) {
-        setError("Cannot reach signaling server on port 5001. Run: cd videoserver && npm start");
+setError("Unable to connect to the video server. Please try again later.");
         stream.getTracks().forEach(t => t.stop());
         return;
       }
@@ -258,9 +261,12 @@ export default function VideoCall() {
 
       socket.emit("join", { roomId });
       setStep("incall"); // ← after this render, useEffect re-attaches localStream
-    } catch {
-      setError("Could not access camera/microphone. Check browser permissions.");
-    }
+    } catch (err) {
+  console.error("Video call startup error:", err);
+  cleanup();
+  setPeerConnected(false);
+  setError("Could not start video call. Check camera and microphone permissions.");
+}
   };
 
   const endCall = () => {

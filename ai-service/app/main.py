@@ -24,7 +24,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://telemedicine-app-mr3o.onrender.com",   # backend
-        "http://localhost:5001",   # backend alt
+        "https://telemed-video-server.onrender.com",   # signaling server
         "https://telemedicine-app-six-beryl.vercel.app/",   # before-login / login page
         "https://telemed-user-panel.vercel.app/",   # user panel
         "https://telemed-doctor-panel.vercel.app/",   # doctor panel (in case)

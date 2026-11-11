@@ -9,7 +9,7 @@ import { io } from "socket.io-client";
 import { Video, VideoOff, Mic, MicOff, PhoneOff, ArrowLeft, Lock, Hash, AlertCircle, Users } from "lucide-react";
 
 // ✅ FIX: correct ports
-const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL || "http://localhost:5001";
+const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL || "https://telemed-video-server.onrender.com";
 const BACKEND_URL   = import.meta.env.VITE_BACKEND_URL   || "https://telemedicine-app-mr3o.onrender.com";
 
 const ICE_SERVERS = [
