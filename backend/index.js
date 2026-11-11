@@ -26,7 +26,7 @@ if (!MONGO_URL) {
   process.exit(1);
 }
 
-/
+
 /* CORS CONFIGURATION */
 
 const allowedOrigins = [
