@@ -11,9 +11,10 @@ import adminRoutes from "./routes/adminRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import doctorRoutes from "./routes/doctorRoutes.js";
 import meetingRoutes from "./routes/meetingRoutes.js";
-import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 import Contact from "./models/Contact.js";
 import Signup from "./models/Signup.js";
+
+import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 
 dotenv.config();
 
