@@ -26,6 +26,7 @@ if (!MONGO_URL) {
   process.exit(1);
 }
 
+/
 /* CORS CONFIGURATION */
 
 const allowedOrigins = [
@@ -33,25 +34,29 @@ const allowedOrigins = [
   "https://telemed-user-panel.vercel.app",
   "https://telemed-doctor-panel.vercel.app",
   "https://telemed-admin-panel.vercel.app",
+
   ...(process.env.FRONTEND_URLS || "")
     .split(",")
-    .map(url => url.trim().replace(/\/$/, ""))
+    .map(url => url.trim())
     .filter(Boolean)
-];
+].map(url => url.replace(/\/+$/, ""));
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin.replace(/\/+$/, ""))) {
       return callback(null, true);
     }
 
-    console.error("Blocked CORS origin:", origin);
+    console.error("CORS blocked origin:", origin);
     return callback(new Error("Not allowed by CORS: " + origin));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-}));
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204
+};
 
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
