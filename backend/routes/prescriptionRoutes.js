@@ -6,7 +6,7 @@
 
 import express        from "express";
 import { protect }    from "../middleware/authMiddleware.js";
-import Prescription   from "../models/Prescription.js";
+import Prescription   from "../models/prescription.js";
 import { encrypt, decrypt } from "../utils/encryption.js";
 
 
