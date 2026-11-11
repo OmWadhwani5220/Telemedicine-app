@@ -139,7 +139,9 @@ app.get("/api/users", async (req, res) => {
 
 const startServer = async () => {
   try {
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(MONGO_URL, {
+  dbName: "telemed"
+});
 
     console.log("MongoDB Atlas Connected Successfully");
 
