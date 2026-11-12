@@ -196,6 +196,7 @@ app.get("/api/users", async (req, res) => {
    DATABASE CONNECTION
 ================================ */
 
+
 const startServer = async () => {
   try {
     await mongoose.connect(MONGO_URL, {
@@ -204,6 +205,7 @@ const startServer = async () => {
 
     console.log("MongoDB Atlas Connected Successfully");
 
+    // Database diagnostics
     console.log(
       "DATABASE NAME:",
       mongoose.connection.name
@@ -221,11 +223,20 @@ const startServer = async () => {
       userCount
     );
 
+    // Verify users collection
+    if (Signup.collection.name !== "users") {
+      throw new Error(
+        `Wrong collection! Expected users, connected to ${Signup.collection.name}`
+      );
+    }
+
+    // Frontend CORS diagnostics
     console.log(
       "ALLOWED FRONTEND ORIGINS:",
       allowedOrigins
     );
 
+    // Start server
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server listening on port ${PORT}`);
     });
@@ -239,6 +250,7 @@ const startServer = async () => {
     process.exit(1);
   }
 };
+
 
 /* ===============================
    ENVIRONMENT CHECK
