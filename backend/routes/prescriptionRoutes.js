@@ -1,114 +1,203 @@
-// backend/routes/prescriptionRoutes.js
-//
-// Register in backend/index.js:
-//   import prescriptionRoutes from "./routes/prescriptionRoutes.js";
-//   app.use("/api/prescriptions", prescriptionRoutes);
 
-import express        from "express";
-import { protect }    from "../middleware/authMiddleware.js";
-import Prescription   from "../models/prescription.js";
+import express from "express";
+import { protect } from "../middleware/authMiddleware.js";
+import Prescription from "../models/prescription.js";
+import Signup from "../models/Signup.js";
 import { encrypt, decrypt } from "../utils/encryption.js";
-
 
 const router = express.Router();
 
-// ── POST /api/prescriptions ────────────────────────────────────────────────────
-// Doctor saves / updates prescription during or after call
-// Body: { meetingId, patientEmail, patientName, prescription: { diagnosis, medications, instructions, followUpDate, notes } }
+// POST /api/prescriptions
+// Doctor saves or updates a prescription
 router.post("/", protect, async (req, res) => {
   try {
-    const { meetingId, patientEmail, patientName, prescription } = req.body;
-
-    if (!meetingId || !patientEmail || !prescription) {
-      return res.status(400).json({ message: "meetingId, patientEmail and prescription are required" });
+    if (req.user.role !== "doctor") {
+      return res.status(403).json({
+        success: false,
+        message: "Only doctors can save prescriptions"
+      });
     }
 
-    // Encrypt the prescription object
+    const { meetingId, patientEmail, patientName, doctorName, prescription } = req.body;
+
+    if (!meetingId || !patientEmail || !prescription) {
+      return res.status(400).json({
+        success: false,
+        message: "meetingId, patientEmail and prescription are required"
+      });
+    }
+
+    // Use original Signup user ID, not Doctor profile ID
+    const doctorUserId = req.user.userId || req.user.id;
+
     const encrypted = encrypt(prescription);
 
-    // Upsert — doctor can save multiple times during call (last write wins)
     const doc = await Prescription.findOneAndUpdate(
-      { meetingId: meetingId.toUpperCase(), patientEmail: patientEmail.toLowerCase() },
       {
-        doctorUserId:  req.user.id,
-        doctorName:    req.user.name || req.body.doctorName || "Doctor",
-        patientName:   patientName || "",
-        encryptedData: encrypted.encryptedData,
-        iv:            encrypted.iv,
-        authTag:       encrypted.authTag,
+        meetingId: meetingId.trim().toUpperCase(),
+        patientEmail: patientEmail.trim().toLowerCase()
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      {
+        doctorUserId,
+        doctorName: req.user.name || doctorName || "Doctor",
+        patientName: patientName || "",
+        encryptedData: encrypted.encryptedData,
+        iv: encrypted.iv,
+        authTag: encrypted.authTag
+      },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true
+      }
     );
 
-    res.json({ success: true, id: doc._id, message: "Prescription saved" });
+    return res.status(200).json({
+      success: true,
+      id: doc._id,
+      message: "Prescription saved successfully"
+    });
+
   } catch (err) {
-    console.error("Prescription save error:", err.message);
-    res.status(500).json({ message: "Failed to save prescription", detail: err.message });
+    console.error("Prescription save error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to save prescription",
+      detail: err.message
+    });
   }
 });
 
-// ── GET /api/prescriptions/my ─────────────────────────────────────────────────
-// Patient fetches all their prescriptions (decrypted)
+
+// GET /api/prescriptions/my
+// Patient fetches their prescriptions
 router.get("/my", protect, async (req, res) => {
   try {
-    // Patient's email is on req.user (decoded from JWT via protect middleware)
-    // The Signup model stores email, so we can use it here
-    const { email } = req.user;
-
-    if (!email) {
-      return res.status(400).json({ message: "Cannot determine patient email from token" });
+    if (req.user.role !== "patient") {
+      return res.status(403).json({
+        success: false,
+        message: "Only patients can access this endpoint"
+      });
     }
 
-    const records = await Prescription.find({ patientEmail: email.toLowerCase() })
+    const userId = req.user.userId || req.user.id;
+
+    const user = await Signup.findById(userId).select("email");
+
+    if (!user?.email) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient account or email not found"
+      });
+    }
+
+    const records = await Prescription.find({
+      patientEmail: user.email.toLowerCase()
+    })
       .sort({ createdAt: -1 })
       .lean();
 
-    const decrypted = records.map(r => ({
-      _id:          r._id,
-      meetingId:    r.meetingId,
-      doctorName:   r.doctorName,
-      patientName:  r.patientName,
-      prescription: decrypt({ encryptedData: r.encryptedData, iv: r.iv, authTag: r.authTag }),
-      createdAt:    r.createdAt,
-      updatedAt:    r.updatedAt,
+    const decrypted = records.map(record => ({
+      _id: record._id,
+      meetingId: record.meetingId,
+      doctorName: record.doctorName,
+      patientName: record.patientName,
+      prescription: decrypt({
+        encryptedData: record.encryptedData,
+        iv: record.iv,
+        authTag: record.authTag
+      }),
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt
     }));
 
-    res.json({ prescriptions: decrypted });
+    return res.json({
+      success: true,
+      prescriptions: decrypted
+    });
+
   } catch (err) {
-    console.error("Prescription fetch error:", err.message);
-    res.status(500).json({ message: "Failed to fetch prescriptions" });
+    console.error("Prescription fetch error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch prescriptions"
+    });
   }
 });
 
-// ── GET /api/prescriptions/meeting/:meetingId ──────────────────────────────────
-// Doctor or patient fetches prescription for a specific meeting
+
+// GET /api/prescriptions/meeting/:meetingId
+// Fetch prescription for a meeting
 router.get("/meeting/:meetingId", protect, async (req, res) => {
   try {
     const record = await Prescription.findOne({
-      meetingId: req.params.meetingId.toUpperCase(),
+      meetingId: req.params.meetingId.trim().toUpperCase()
     }).lean();
 
-    if (!record) return res.status(404).json({ message: "No prescription found for this meeting" });
+    if (!record) {
+      return res.status(404).json({
+        success: false,
+        message: "No prescription found for this meeting"
+      });
+    }
+
+    // Verify that the requesting user is the relevant doctor or patient
+    const userId = req.user.userId || req.user.id;
+
+    if (req.user.role === "doctor") {
+      if (String(record.doctorUserId) !== String(userId)) {
+        return res.status(403).json({
+          success: false,
+          message: "You cannot access this prescription"
+        });
+      }
+    } else if (req.user.role === "patient") {
+      const user = await Signup.findById(userId).select("email");
+
+      if (
+        !user?.email ||
+        user.email.toLowerCase() !== record.patientEmail.toLowerCase()
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "You cannot access this prescription"
+        });
+      }
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied"
+      });
+    }
 
     const prescription = decrypt({
       encryptedData: record.encryptedData,
-      iv:            record.iv,
-      authTag:       record.authTag,
+      iv: record.iv,
+      authTag: record.authTag
     });
 
-    res.json({
-      _id:         record._id,
-      meetingId:   record.meetingId,
-      doctorName:  record.doctorName,
+    return res.json({
+      success: true,
+      _id: record._id,
+      meetingId: record.meetingId,
+      doctorName: record.doctorName,
       patientName: record.patientName,
-      patientEmail:record.patientEmail,
+      patientEmail: record.patientEmail,
       prescription,
-      createdAt:   record.createdAt,
-      updatedAt:   record.updatedAt,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt
     });
+
   } catch (err) {
-    console.error("Prescription fetch error:", err.message);
-    res.status(500).json({ message: "Failed to fetch prescription" });
+    console.error("Prescription fetch error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch prescription"
+    });
   }
 });
 
