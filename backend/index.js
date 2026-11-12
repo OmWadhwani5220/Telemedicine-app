@@ -26,44 +26,90 @@ if (!MONGO_URL) {
   process.exit(1);
 }
 
-/* CORS CONFIGURATION */
+/* ===============================
+   CORS CONFIGURATION
+================================ */
 
 const allowedOrigins = [
-  "https://telemedicine-app-six-beryl.vercel.app/",
-  "https://telemed-user-panel.vercel.app/",
-  "https://telemed-doctor-panel.vercel.app/",
-  "https://telemed-admin-panel.vercel.app/",
+  "https://telemedicine-app-six-beryl.vercel.app",
+  "https://telemed-user-panel.vercel.app",
+  "https://telemed-doctor-panel.vercel.app",
+  "https://telemed-admin-panel.vercel.app",
+
   ...(process.env.FRONTEND_URLS || "")
     .split(",")
     .map(url => url.trim())
     .filter(Boolean)
-];
+].map(url => url.replace(/\/+$/, ""));
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests without an Origin header
+    if (!origin) {
       return callback(null, true);
     }
 
-    return callback(new Error("Not allowed by CORS: " + origin));
+    const normalizedOrigin = origin.replace(/\/+$/, "");
+
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    console.error("CORS blocked origin:", origin);
+
+    return callback(
+      new Error("Not allowed by CORS: " + origin)
+    );
   },
-  credentials: true
-}));
+
+  credentials: true,
+
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS"
+  ],
+
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization"
+  ],
+
+  optionsSuccessStatus: 204
+};
+
+// CORS must be registered before API routes
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options(/.*/, cors(corsOptions));
+
+/* ===============================
+   MIDDLEWARE
+================================ */
 
 app.use(express.json());
 app.use(cookieParser());
 app.use("/uploads", express.static("uploads"));
 
-/* HEALTH CHECK */
+/* ===============================
+   HEALTH CHECK
+================================ */
 
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
-    dbState: mongoose.connection.readyState
+    dbState: mongoose.connection.readyState,
+    database: mongoose.connection.name
   });
 });
 
-/* CONTACT FORM */
+/* ===============================
+   CONTACT FORM
+================================ */
 
 app.post(
   "/api/contact",
@@ -76,11 +122,20 @@ app.post(
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({
+        errors: errors.array()
+      });
     }
 
     try {
-      const { name, email, phone, subject, message, agree } = req.body;
+      const {
+        name,
+        email,
+        phone,
+        subject,
+        message,
+        agree
+      } = req.body;
 
       const contact = new Contact({
         name,
@@ -97,14 +152,20 @@ app.post(
         message: "Contact saved",
         id: saved._id
       });
+
     } catch (err) {
       console.error("Save error:", err);
-      return res.status(500).json({ error: "Server error" });
+
+      return res.status(500).json({
+        error: "Server error"
+      });
     }
   }
 );
 
-/* ROUTES */
+/* ===============================
+   API ROUTES
+================================ */
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
@@ -112,46 +173,76 @@ app.use("/api/patient", patientRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/meetings", meetingRoutes);
 
-/* ALL USERS */
+/* ===============================
+   ALL USERS
+================================ */
 
 app.get("/api/users", async (req, res) => {
   try {
-    const users = await Signup.find();
+    const users = await Signup.find().select("-password");
+
     res.json(users);
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Get users error:", err);
+
+    res.status(500).json({
+      message: "Server error"
+    });
   }
 });
 
-/* CONNECT DATABASE AND START SERVER */
-
+/* ===============================
+   DATABASE CONNECTION
+================================ */
 
 const startServer = async () => {
   try {
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(MONGO_URL, {
+      dbName: "telemed"
+    });
 
     console.log("MongoDB Atlas Connected Successfully");
 
-    // Database diagnostics
-    console.log("DATABASE NAME:", mongoose.connection.name);
-    console.log("SIGNUP COLLECTION:", Signup.collection.name);
+    console.log(
+      "DATABASE NAME:",
+      mongoose.connection.name
+    );
 
-    const signupCount = await Signup.countDocuments();
+    console.log(
+      "USER COLLECTION:",
+      Signup.collection.name
+    );
 
-    console.log("SIGNUP DOCUMENT COUNT:", signupCount);
+    const userCount = await Signup.countDocuments();
 
-    // Start server
+    console.log(
+      "TOTAL USERS:",
+      userCount
+    );
+
+    console.log(
+      "ALLOWED FRONTEND ORIGINS:",
+      allowedOrigins
+    );
+
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server listening on port ${PORT}`);
     });
 
   } catch (err) {
-    console.error("MongoDB connection error:", err.message);
+    console.error(
+      "MongoDB connection error:",
+      err.message
+    );
+
     process.exit(1);
   }
 };
 
+/* ===============================
+   ENVIRONMENT CHECK
+================================ */
 
 console.log(
   "JWT_SECRET loaded:",
