@@ -18,7 +18,13 @@ router.post("/", protect, async (req, res) => {
       });
     }
 
-    const { meetingId, patientEmail, patientName, doctorName, prescription } = req.body;
+    const {
+      meetingId,
+      patientEmail,
+      patientName,
+      doctorName,
+      prescription
+    } = req.body || {};
 
     if (!meetingId || !patientEmail || !prescription) {
       return res.status(400).json({

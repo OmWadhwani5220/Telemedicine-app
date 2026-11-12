@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL || "https://telemed-video-server.onrender.com";
-const BACKEND_URL   = import.meta.env.VITE_BACKEND_URL   || "https://telemedicine-app-mr3o.onrender.com";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://telemedicine-app-mr3o.onrender.com";
 
 const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
@@ -23,48 +23,48 @@ const generatePassword = () =>
   Math.random().toString(36).substring(2, 10);
 
 const emptyPrescription = () => ({
-  diagnosis:    "",
-  medications:  [{ name: "", dosage: "", frequency: "", duration: "" }],
+  diagnosis: "",
+  medications: [{ name: "", dosage: "", frequency: "", duration: "" }],
   instructions: "",
   followUpDate: "",
-  notes:        "",
+  notes: "",
 });
 
 export default function VideoCall() {
-  const [isExpanded,    setIsExpanded]    = useState(false);
-  const [step,          setStep]          = useState("setup");
-  const [roomId,        setRoomId]        = useState("");
-  const [password,      setPassword]      = useState("");
-  const [patientEmail,  setPatientEmail]  = useState("");
-  const [patientName,   setPatientName]   = useState("");
-  const [emailSent,     setEmailSent]     = useState(false);
-  const [sendingEmail,  setSendingEmail]  = useState(false);
-  const [copied,        setCopied]        = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [step, setStep] = useState("setup");
+  const [roomId, setRoomId] = useState("");
+  const [password, setPassword] = useState("");
+  const [patientEmail, setPatientEmail] = useState("");
+  const [patientName, setPatientName] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [peerConnected, setPeerConnected] = useState(false);
-  const [audioOnly,     setAudioOnly]     = useState(false);
-  const [micOn,         setMicOn]         = useState(true);
-  const [camOn,         setCamOn]         = useState(true);
-  const [callDuration,  setCallDuration]  = useState(0);
-  const [error,         setError]         = useState("");
+  const [audioOnly, setAudioOnly] = useState(false);
+  const [micOn, setMicOn] = useState(true);
+  const [camOn, setCamOn] = useState(true);
+  const [callDuration, setCallDuration] = useState(0);
+  const [error, setError] = useState("");
 
   // Prescription state
-  const [rx,         setRx]         = useState(emptyPrescription());
-  const [rxSaving,   setRxSaving]   = useState(false);
-  const [rxSaved,    setRxSaved]    = useState(false);
-  const [rxError,    setRxError]    = useState("");
+  const [rx, setRx] = useState(emptyPrescription());
+  const [rxSaving, setRxSaving] = useState(false);
+  const [rxSaved, setRxSaved] = useState(false);
+  const [rxError, setRxError] = useState("");
   const [rxExpanded, setRxExpanded] = useState(true);
 
   // Doctor name from localStorage (set at login — no extra API call needed)
   const doctorName = localStorage.getItem("name") || "Doctor";
 
-  const localVideoRef  = useRef(null);
+  const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-  const socketRef      = useRef(null);
-  const pcRef          = useRef(null);
-  const peerIdRef      = useRef(null);
+  const socketRef = useRef(null);
+  const pcRef = useRef(null);
+  const peerIdRef = useRef(null);
   const localStreamRef = useRef(null);
-  const timerRef       = useRef(null);
-  const iceBufRef      = useRef([]);
+  const timerRef = useRef(null);
+  const iceBufRef = useRef([]);
 
   useEffect(() => {
     setRoomId(generateRoomId());
@@ -76,7 +76,7 @@ export default function VideoCall() {
   // in-call screen is brand new — srcObject must be set again.
   useEffect(() => {
     if (localStreamRef.current && localVideoRef.current &&
-        localVideoRef.current.srcObject !== localStreamRef.current) {
+      localVideoRef.current.srcObject !== localStreamRef.current) {
       localVideoRef.current.srcObject = localStreamRef.current;
     }
   }); // no dependency array → runs after every render
@@ -93,9 +93,9 @@ export default function VideoCall() {
 
   const cleanup = useCallback(() => {
     clearInterval(timerRef.current);
-    try { socketRef.current?.disconnect(); } catch {}
+    try { socketRef.current?.disconnect(); } catch { }
     socketRef.current = null;
-    try { pcRef.current?.close(); } catch {}
+    try { pcRef.current?.close(); } catch { }
     pcRef.current = null;
     peerIdRef.current = null;
     iceBufRef.current = [];
@@ -108,7 +108,7 @@ export default function VideoCall() {
 
   const flushIce = async (pc) => {
     for (const c of iceBufRef.current) {
-      try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
+      try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch { }
     }
     iceBufRef.current = [];
   };
@@ -136,14 +136,16 @@ export default function VideoCall() {
       const token = localStorage.getItem("token");
       const res = await fetch(`${BACKEND_URL}/api/prescriptions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({
-          meetingId:    roomId,
+          meetingId: roomId,
           patientEmail,
           patientName,
           doctorName,
-          prescription: rx,
+          prescription: rx
         }),
       });
       const data = await res.json();
@@ -200,12 +202,12 @@ export default function VideoCall() {
 
       const connected = await new Promise(res => {
         const t = setTimeout(() => res(false), 8000);
-        socket.once("connect",       () => { clearTimeout(t); res(true); });
+        socket.once("connect", () => { clearTimeout(t); res(true); });
         socket.once("connect_error", () => { clearTimeout(t); res(false); });
       });
 
       if (!connected) {
-setError("Unable to connect to the video server. Please try again later.");
+        setError("Unable to connect to the video server. Please try again later.");
         stream.getTracks().forEach(t => t.stop());
         return;
       }
@@ -214,7 +216,7 @@ setError("Unable to connect to the video server. Please try again later.");
       pcRef.current = pc;
 
       pc.onconnectionstatechange = () => {
-        if (pc.connectionState === "connected")  { setPeerConnected(true);  setError(""); }
+        if (pc.connectionState === "connected") { setPeerConnected(true); setError(""); }
         if (pc.connectionState === "disconnected" || pc.connectionState === "failed") {
           setPeerConnected(false);
           if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
@@ -250,7 +252,7 @@ setError("Unable to connect to the video server. Please try again later.");
       socket.on("ice", async ({ candidate }) => {
         if (!candidate) return;
         if (pc.remoteDescription?.type) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch {}
+          try { await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch { }
         } else { iceBufRef.current.push(candidate); }
       });
 
@@ -262,11 +264,11 @@ setError("Unable to connect to the video server. Please try again later.");
       socket.emit("join", { roomId });
       setStep("incall"); // ← after this render, useEffect re-attaches localStream
     } catch (err) {
-  console.error("Video call startup error:", err);
-  cleanup();
-  setPeerConnected(false);
-  setError("Could not start video call. Check camera and microphone permissions.");
-}
+      console.error("Video call startup error:", err);
+      cleanup();
+      setPeerConnected(false);
+      setError("Could not start video call. Check camera and microphone permissions.");
+    }
   };
 
   const endCall = () => {
@@ -418,7 +420,7 @@ setError("Unable to connect to the video server. Please try again later.");
           {/* ── FIX: Local PiP — localVideoRef ONLY here ─────────────────── */}
           {/* srcObject is attached by the always-running useEffect above     */}
           <div className="absolute bottom-16 right-3 w-44 h-33 bg-gray-800 rounded-xl overflow-hidden border-2 border-gray-600 shadow-2xl"
-               style={{ height: "8.5rem" }}>
+            style={{ height: "8.5rem" }}>
             <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover scale-x-[-1]" />
             {!camOn && (
               <div className="absolute inset-0 bg-gray-900/90 flex items-center justify-center">
@@ -449,7 +451,7 @@ setError("Unable to connect to the video server. Please try again later.");
 
         {/* ── RIGHT: Prescription Notepad ─────────────────────────────────── */}
         <div className="w-80 bg-gray-850 border-l border-gray-700 flex flex-col overflow-hidden"
-             style={{ background: "#1a1f2e" }}>
+          style={{ background: "#1a1f2e" }}>
 
           {/* Notepad header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700 flex-shrink-0">
