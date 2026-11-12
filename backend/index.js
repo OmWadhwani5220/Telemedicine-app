@@ -83,7 +83,7 @@ const corsOptions = {
 
 // CORS must be registered before API routes
 app.use(cors(corsOptions));
-
+app.use("/api/prescriptions", prescriptionRoutes);
 // Handle preflight requests
 app.options(/.*/, cors(corsOptions));
 
