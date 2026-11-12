@@ -1,88 +1,236 @@
-// video-server/index.js
-// ✅ FIX: Runs on port 5001 (backend is on 5000 — they CANNOT share a port)
 
 import express from "express";
-import http    from "http";
+import http from "http";
 import { Server } from "socket.io";
-import cors   from "cors";
+import cors from "cors";
 
 const app = express();
-app.use(cors({ origin: "*" }));
+
+const PORT = process.env.PORT || 5001;
+
+/* ===============================
+   CORS CONFIGURATION
+================================ */
+
+const allowedOrigins = [
+  "https://telemedicine-app-six-beryl.vercel.app",
+  "https://telemed-user-panel.vercel.app",
+  "https://telemed-doctor-panel.vercel.app",
+  "https://telemed-admin-panel.vercel.app",
+
+  ...(process.env.FRONTEND_URLS || "")
+    .split(",")
+    .map(url => url.trim())
+    .filter(Boolean)
+].map(url => url.replace(/\/+$/, ""));
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    const normalizedOrigin = origin.replace(/\/+$/, "");
+
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    console.error("CORS blocked:", origin);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
-app.get("/",         (req, res) => res.send("Signaling Server ✅"));
-app.get("/api/test", (req, res) => res.json({ ok: true }));
+/* ===============================
+   HEALTH CHECK
+================================ */
+
+app.get("/", (req, res) => {
+  res.send("TeleMed Signaling Server is running");
+});
+
+app.get("/api/test", (req, res) => {
+  res.json({
+    ok: true,
+    service: "video-server",
+    status: "running"
+  });
+});
+
+/* ===============================
+   SOCKET.IO SERVER
+================================ */
 
 const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
+  cors: corsOptions,
   allowEIO3: true,
   transports: ["polling", "websocket"],
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
-// Track rooms for ICE buffering awareness
-const rooms = new Map(); // roomId → Set of socket ids
+/* ===============================
+   ROOM MANAGEMENT
+================================ */
+
+const rooms = new Map();
 
 io.on("connection", (socket) => {
-  console.log("✅ connected:", socket.id);
+  console.log("Client connected:", socket.id);
 
-  socket.on("join", ({ roomId }) => {
-    socket.join(roomId);
-    if (!rooms.has(roomId)) rooms.set(roomId, new Set());
-    rooms.get(roomId).add(socket.id);
+  /* JOIN ROOM */
 
-    const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
-    const other   = clients.find((id) => id !== socket.id);
-    console.log(`[${roomId}] peers: ${clients.length}`);
+  socket.on("join", ({ roomId } = {}) => {
+    if (!roomId) {
+      console.log("Join rejected: missing roomId");
+      return;
+    }
+
+    const normalizedRoomId = roomId.trim().toUpperCase();
+
+    socket.join(normalizedRoomId);
+
+    if (!rooms.has(normalizedRoomId)) {
+      rooms.set(normalizedRoomId, new Set());
+    }
+
+    rooms.get(normalizedRoomId).add(socket.id);
+
+    const clients = Array.from(
+      io.sockets.adapter.rooms.get(normalizedRoomId) || []
+    );
+
+    const other = clients.find(id => id !== socket.id);
+
+    console.log(
+      `[${normalizedRoomId}] Connected peers: ${clients.length}`
+    );
 
     if (other) {
-      // Both peers present — tell each other their peer ID
       socket.emit("peer", { peerId: other });
-      io.to(other).emit("peer", { peerId: socket.id });
-      io.to(other).emit("peer-joined", { peerId: socket.id });
+
+      io.to(other).emit("peer", {
+        peerId: socket.id
+      });
+
+      io.to(other).emit("peer-joined", {
+        peerId: socket.id
+      });
     }
   });
 
-  // Explicit leave
-  socket.on("leave", ({ roomId }) => {
-    socket.leave(roomId);
-    rooms.get(roomId)?.delete(socket.id);
-    socket.to(roomId).emit("peer-left");
-    console.log(`🚪 ${socket.id} left ${roomId}`);
+  /* LEAVE ROOM */
+
+  socket.on("leave", ({ roomId } = {}) => {
+    if (!roomId) return;
+
+    const normalizedRoomId = roomId.trim().toUpperCase();
+
+    socket.leave(normalizedRoomId);
+
+    rooms.get(normalizedRoomId)?.delete(socket.id);
+
+    if (rooms.get(normalizedRoomId)?.size === 0) {
+      rooms.delete(normalizedRoomId);
+    }
+
+    socket.to(normalizedRoomId).emit("peer-left");
+
+    console.log(
+      `Client ${socket.id} left room ${normalizedRoomId}`
+    );
   });
 
-  // WebRTC relay — support both direct (to) and room-broadcast (roomId)
-  socket.on("offer", ({ to, offer }) => {
-    io.to(to).emit("offer", { from: socket.id, offer });
+  /* WEBRTC OFFER */
+
+  socket.on("offer", ({ to, offer } = {}) => {
+    if (!to || !offer) return;
+
+    console.log("Relaying offer:", socket.id, "->", to);
+
+    io.to(to).emit("offer", {
+      from: socket.id,
+      offer
+    });
   });
 
-  socket.on("answer", ({ to, answer }) => {
-    io.to(to).emit("answer", { from: socket.id, answer });
+  /* WEBRTC ANSWER */
+
+  socket.on("answer", ({ to, answer } = {}) => {
+    if (!to || !answer) return;
+
+    console.log("Relaying answer:", socket.id, "->", to);
+
+    io.to(to).emit("answer", {
+      from: socket.id,
+      answer
+    });
   });
 
-  socket.on("ice", ({ to, candidate, roomId }) => {
+  /* ICE CANDIDATES */
+
+  socket.on("ice", ({ to, candidate, roomId } = {}) => {
+    if (!candidate) return;
+
     if (to) {
-      io.to(to).emit("ice", { from: socket.id, candidate });
+      io.to(to).emit("ice", {
+        from: socket.id,
+        candidate
+      });
     } else if (roomId) {
-      socket.to(roomId).emit("ice", { from: socket.id, candidate });
+      const normalizedRoomId = roomId.trim().toUpperCase();
+
+      socket.to(normalizedRoomId).emit("ice", {
+        from: socket.id,
+        candidate
+      });
     }
   });
+
+  /* DISCONNECTING */
 
   socket.on("disconnecting", () => {
     for (const roomId of socket.rooms) {
       if (roomId !== socket.id) {
         socket.to(roomId).emit("peer-left");
+
         rooms.get(roomId)?.delete(socket.id);
+
+        if (rooms.get(roomId)?.size === 0) {
+          rooms.delete(roomId);
+        }
       }
     }
   });
 
-  socket.on("disconnect", () => console.log("❌ disconnected:", socket.id));
+  socket.on("disconnect", (reason) => {
+    console.log(
+      "Client disconnected:",
+      socket.id,
+      reason
+    );
+  });
+
+  socket.on("error", (error) => {
+    console.error("Socket error:", error);
+  });
 });
 
-// ✅ FIX: port 5001, not 5000 (which is taken by the backend)
-const PORT = process.env.PORT || 5001;
+/* ===============================
+   START SERVER
+================================ */
+
 httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ Signaling server → http://localhost:${PORT}`);
+  console.log("--------------------------------");
+  console.log("TeleMed Video Signaling Server");
+  console.log("PORT:", PORT);
+  console.log("HOST: 0.0.0.0");
+  console.log("ALLOWED ORIGINS:", allowedOrigins);
+  console.log("STATUS: RUNNING");
+  console.log("--------------------------------");
 });
