@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { FileText, Pill, Calendar, RefreshCw, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
+import TranslatedText from "./TranslatedText";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
@@ -52,12 +53,12 @@ export function Prescriptions({ navigateTo }) {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">My Prescriptions</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Issued by your doctors during consultations</p>
+            <h1 className="text-2xl font-bold text-gray-800"><TranslatedText>My Prescriptions</TranslatedText></h1>
+            <p className="text-sm text-gray-500 mt-0.5"><TranslatedText>Issued by your doctors during consultations</TranslatedText></p>
           </div>
           <button onClick={fetchPrescriptions} disabled={loading}
             className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700 font-medium disabled:opacity-50">
-            <RefreshCw size={15} className={loading ? "animate-spin" : ""} /> Refresh
+            <RefreshCw size={15} className={loading ? "animate-spin" : ""} /> <TranslatedText>Refresh</TranslatedText>
           </button>
         </div>
 
@@ -73,8 +74,8 @@ export function Prescriptions({ navigateTo }) {
           <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-5 py-4 text-red-600 text-sm">
             <AlertCircle size={18} className="mt-0.5 shrink-0" />
             <div>
-              <p className="font-medium">Could not load prescriptions</p>
-              <p className="text-red-500 text-xs mt-0.5">{error}</p>
+              <p className="font-medium"><TranslatedText>Could not load prescriptions</TranslatedText></p>
+              <p className="text-red-500 text-xs mt-0.5"><TranslatedText>{error}</TranslatedText></p>
             </div>
           </div>
         )}
@@ -85,8 +86,8 @@ export function Prescriptions({ navigateTo }) {
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FileText size={28} className="text-gray-400" />
             </div>
-            <p className="text-gray-600 font-medium">No prescriptions yet</p>
-            <p className="text-gray-400 text-sm mt-1">Prescriptions from your video consultations will appear here.</p>
+            <p className="text-gray-600 font-medium"><TranslatedText>No prescriptions yet</TranslatedText></p>
+            <p className="text-gray-400 text-sm mt-1"><TranslatedText>Prescriptions from your video consultations will appear here.</TranslatedText></p>
           </div>
         )}
 
@@ -115,7 +116,7 @@ export function Prescriptions({ navigateTo }) {
                     </p>
                     {rx.diagnosis && (
                       <p className="text-sm text-teal-600 font-medium mt-1 truncate max-w-sm">
-                        {rx.diagnosis}
+                        <TranslatedText>{rx.diagnosis}</TranslatedText>
                       </p>
                     )}
                   </div>
@@ -135,15 +136,15 @@ export function Prescriptions({ navigateTo }) {
                   {/* Diagnosis */}
                   {rx.diagnosis && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Diagnosis</p>
-                      <p className="text-gray-700 text-sm bg-gray-50 rounded-xl px-4 py-3">{rx.diagnosis}</p>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5"><TranslatedText>Diagnosis</TranslatedText></p>
+                      <p className="text-gray-700 text-sm bg-gray-50 rounded-xl px-4 py-3"><TranslatedText>{rx.diagnosis}</TranslatedText></p>
                     </div>
                   )}
 
                   {/* Medications */}
                   {rx.medications?.length > 0 && rx.medications.some(m => m.name) && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Medications</p>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2"><TranslatedText>Medications</TranslatedText></p>
                       <div className="space-y-2">
                         {rx.medications.filter(m => m.name).map((med, i) => (
                           <div key={i} className="flex items-start gap-3 bg-blue-50 rounded-xl px-4 py-3 border border-blue-100">
@@ -152,8 +153,8 @@ export function Prescriptions({ navigateTo }) {
                               <p className="text-sm font-semibold text-gray-800">{med.name}</p>
                               <div className="flex flex-wrap gap-3 mt-1">
                                 {med.dosage    && <span className="text-xs text-gray-500">💊 {med.dosage}</span>}
-                                {med.frequency && <span className="text-xs text-gray-500">🕐 {med.frequency}</span>}
-                                {med.duration  && <span className="text-xs text-gray-500">📅 {med.duration}</span>}
+                                {med.frequency && <span className="text-xs text-gray-500">🕐 <TranslatedText>{med.frequency}</TranslatedText></span>}
+                                {med.duration  && <span className="text-xs text-gray-500">📅 <TranslatedText>{med.duration}</TranslatedText></span>}
                               </div>
                             </div>
                           </div>
@@ -165,8 +166,8 @@ export function Prescriptions({ navigateTo }) {
                   {/* Instructions */}
                   {rx.instructions && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Instructions</p>
-                      <p className="text-gray-700 text-sm bg-gray-50 rounded-xl px-4 py-3 whitespace-pre-wrap">{rx.instructions}</p>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5"><TranslatedText>Instructions</TranslatedText></p>
+                      <p className="text-gray-700 text-sm bg-gray-50 rounded-xl px-4 py-3 whitespace-pre-wrap"><TranslatedText>{rx.instructions}</TranslatedText></p>
                     </div>
                   )}
 
@@ -175,7 +176,7 @@ export function Prescriptions({ navigateTo }) {
                     <div className="flex items-center gap-3 bg-orange-50 rounded-xl px-4 py-3 border border-orange-100">
                       <Calendar size={16} className="text-orange-500 flex-shrink-0" />
                       <div>
-                        <p className="text-xs text-orange-600 font-medium">Follow-up Appointment</p>
+                        <p className="text-xs text-orange-600 font-medium"><TranslatedText>Follow-up Appointment</TranslatedText></p>
                         <p className="text-sm font-semibold text-gray-800">{fmt(rx.followUpDate)}</p>
                       </div>
                     </div>
@@ -184,15 +185,15 @@ export function Prescriptions({ navigateTo }) {
                   {/* Notes */}
                   {rx.notes && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Additional Notes</p>
-                      <p className="text-gray-700 text-sm bg-gray-50 rounded-xl px-4 py-3 whitespace-pre-wrap">{rx.notes}</p>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5"><TranslatedText>Additional Notes</TranslatedText></p>
+                      <p className="text-gray-700 text-sm bg-gray-50 rounded-xl px-4 py-3 whitespace-pre-wrap"><TranslatedText>{rx.notes}</TranslatedText></p>
                     </div>
                   )}
 
                   {/* Encryption notice */}
                   <div className="flex items-center gap-2 text-xs text-gray-400 pt-1">
                     <span>🔒</span>
-                    <span>This prescription is stored encrypted (AES-256-GCM) and decrypted only for your view.</span>
+                    <span><TranslatedText>This prescription is stored encrypted (AES-256-GCM) and decrypted only for your view.</TranslatedText></span>
                   </div>
                 </div>
               )}

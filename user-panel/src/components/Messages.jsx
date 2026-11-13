@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Bell, User, Send, Search, Clock, CheckCheck, ArrowLeft, Circle } from "lucide-react";
+import TranslatedText from "./TranslatedText";
+import { useLanguage, useTranslatedText } from "../context/LanguageContext";
 
 const CONVOS = [
   { id:1, doctor:"Dr. Sarah Johnson",  spec:"Cardiology",       last:"Your test results look good.",         time:"10:30 AM",   unread:2, online:true  },
@@ -17,6 +19,7 @@ const INITIAL_MSGS = [
 ];
 
 export function Messages() {
+  const { translateToEnglish } = useLanguage();
   const [conv,   setConv]   = useState(CONVOS[0]);
   const [msgs,   setMsgs]   = useState(INITIAL_MSGS);
   const [input,  setInput]  = useState("");
@@ -24,14 +27,26 @@ export function Messages() {
   const [showList, setShowList] = useState(true);
   const bottomRef = useRef(null);
 
+  const searchPlaceholder  = useTranslatedText("Search doctors…");
+  const messagePlaceholder = useTranslatedText("Type your message…");
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
 
-  const send = (e) => {
+  const send = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
-    setMsgs(m => [...m, { from:"patient", text:input.trim(), time: new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" }) }]);
+    // Keep the database/chat log consistent in English regardless of
+    // what language the patient typed in.
+    let textEn = input.trim();
+    try {
+      textEn = await translateToEnglish(textEn);
+    } catch {
+      // If translation fails, fall back to the original text rather
+      // than losing the message.
+    }
+    setMsgs(m => [...m, { from:"patient", text:textEn, time: new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" }) }]);
     setInput("");
   };
 
@@ -48,8 +63,8 @@ export function Messages() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
         <div className="flex items-center justify-between px-4 sm:px-6 py-4">
           <div className="pl-10 lg:pl-0">
-            <h1 className="text-gray-800 font-bold text-lg">Messages</h1>
-            <p className="text-gray-400 text-xs hidden sm:block">Chat with your healthcare team</p>
+            <h1 className="text-gray-800 font-bold text-lg"><TranslatedText>Messages</TranslatedText></h1>
+            <p className="text-gray-400 text-xs hidden sm:block"><TranslatedText>Chat with your healthcare team</TranslatedText></p>
           </div>
           <button className="relative p-2 hover:bg-gray-100 rounded-xl">
             <Bell className="w-5 h-5 text-gray-500" />
@@ -71,7 +86,7 @@ export function Messages() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 value={q} onChange={e => setQ(e.target.value)}
-                placeholder="Search doctors…"
+                placeholder={searchPlaceholder}
                 className="w-full pl-9 pr-4 py-2.5 bg-gray-100 rounded-xl text-sm
                   focus:outline-none focus:ring-2 focus:ring-emerald-400 placeholder-gray-400"
               />
@@ -98,10 +113,10 @@ export function Messages() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="text-gray-800 font-semibold text-sm truncate">{c.doctor}</p>
-                      <span className="text-gray-400 text-xs flex-shrink-0 ml-2">{c.time}</span>
+                      <span className="text-gray-400 text-xs flex-shrink-0 ml-2"><TranslatedText>{c.time}</TranslatedText></span>
                     </div>
                     <p className="text-emerald-600 text-xs">{c.spec}</p>
-                    <p className="text-gray-400 text-xs truncate mt-0.5">{c.last}</p>
+                    <p className="text-gray-400 text-xs truncate mt-0.5"><TranslatedText>{c.last}</TranslatedText></p>
                   </div>
                   {c.unread > 0 && (
                     <span className="w-5 h-5 bg-emerald-500 text-white text-xs rounded-full
@@ -138,15 +153,15 @@ export function Messages() {
               <p className="text-gray-800 font-semibold text-sm">{conv.doctor}</p>
               <p className="text-gray-400 text-xs flex items-center gap-1">
                 {conv.online
-                  ? <><Circle className="w-2 h-2 text-emerald-500 fill-emerald-500" />Online</>
-                  : <><Circle className="w-2 h-2 text-gray-400 fill-gray-400" />Offline</>
+                  ? <><Circle className="w-2 h-2 text-emerald-500 fill-emerald-500" /><TranslatedText>Online</TranslatedText></>
+                  : <><Circle className="w-2 h-2 text-gray-400 fill-gray-400" /><TranslatedText>Offline</TranslatedText></>
                 }
                 · {conv.spec}
               </p>
             </div>
             <button className="px-3 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-semibold
               hover:bg-emerald-100 transition-colors hidden sm:block">
-              View Profile
+              <TranslatedText>View Profile</TranslatedText>
             </button>
           </div>
 
@@ -165,7 +180,7 @@ export function Messages() {
                     ${m.from === "patient"
                       ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-br-md"
                       : "bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-md"}`}>
-                    {m.text}
+                    <TranslatedText>{m.text}</TranslatedText>
                   </div>
                   <div className={`flex items-center gap-1 mt-1
                     ${m.from === "patient" ? "justify-end" : "justify-start"}`}>
@@ -184,7 +199,7 @@ export function Messages() {
             <form onSubmit={send} className="flex gap-2">
               <input
                 value={input} onChange={e => setInput(e.target.value)}
-                placeholder="Type your message…"
+                placeholder={messagePlaceholder}
                 className="flex-1 bg-gray-100 text-gray-800 rounded-xl px-4 py-3 text-sm
                   focus:outline-none focus:ring-2 focus:ring-emerald-400 placeholder-gray-400"
               />

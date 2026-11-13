@@ -1,7 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
+
 import cookieParser from "cookie-parser";
 import { body, validationResult } from "express-validator";
 
@@ -10,12 +13,14 @@ import adminRoutes   from "./routes/adminRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import doctorRoutes  from "./routes/doctorRoutes.js";
 import meetingRoutes from "./routes/meetingRoutes.js";
+import translationRoutes from "./routes/translationRoutes.js";
+
 import Contact       from "./models/Contact.js";
 import Signup        from "./models/Signup.js";
 //import prescriptionRoutes from "./routes/prescriptionRoutes.js"; 
 
 
-dotenv.config();
+
 
 const app      = express();
 const PORT     = process.env.PORT || 5000;
@@ -80,6 +85,7 @@ app.use("/api/admin",   adminRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/doctor",  doctorRoutes);
 app.use("/api/meetings", meetingRoutes);
+app.use("/api/groq", translationRoutes);
 //app.use("/api/prescriptions", prescriptionRoutes); 
 /* ALL USERS – quick admin helper */
 app.get("/api/users", async (req, res) => {

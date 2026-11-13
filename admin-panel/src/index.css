@@ -1,24 +1,24 @@
 :root {
-    /* ===== PRIMARY BRAND COLORS ===== */
-    --color-primary-teal: #0d9488;
-    --color-primary-teal-dark: #0f766e;
-    --color-primary-teal-light: #14b8a6;
+    /* ===== PRIMARY BRAND COLORS — WHITE & TEAL THEME ===== */
+    --color-primary-teal: #14B8A6;
+    --color-primary-teal-dark: #0D9488;
+    --color-primary-teal-light: #5EEAD4;
 
-    /* ===== MINT BACKGROUND SYSTEM ===== */
-    --color-mint-bg: rgba(209, 250, 229, 0.4);
-    --color-mint-soft: #d1fae5;
-    --color-mint-hover: rgba(209, 250, 229, 0.6);
+    /* ===== MINT/TEAL BACKGROUND SYSTEM ===== */
+    --color-mint-bg: rgba(20, 184, 166, 0.08);
+    --color-mint-soft: #ffffff;
+    --color-mint-hover: rgba(20, 184, 166, 0.12);
 
     /* ===== BORDER COLORS ===== */
-    --color-border-teal-light: rgba(13, 148, 136, 0.3);
-    --color-border-soft: rgba(0, 0, 0, 0.08);
-    --color-border-very-light: rgba(0, 0, 0, 0.05);
+    --color-border-teal-light: rgba(20, 184, 166, 0.35);
+    --color-border-soft: rgba(15, 23, 42, 0.08);
+    --color-border-very-light: rgba(15, 23, 42, 0.06);
 
     /* ===== TEXT COLORS ===== */
-    --color-text-primary: #000000;
-    --color-text-secondary: rgba(0, 0, 0, 0.8);
-    --color-text-muted: rgba(0, 0, 0, 0.6);
-    --color-text-light: rgba(0, 0, 0, 0.4);
+    --color-text-primary: #0f172a;
+    --color-text-secondary: rgba(15, 23, 42, 0.75);
+    --color-text-muted: rgba(15, 23, 42, 0.55);
+    --color-text-light: rgba(15, 23, 42, 0.35);
 
     /* ===== STATUS COLORS ===== */
     --color-success-bg: #d1fae5;
@@ -34,14 +34,37 @@
     --color-info-text: #075985;
 
     /* ===== BACKGROUND SYSTEM ===== */
-    --color-bg-main: #f1f5f9;
+    --color-bg-main: #f2fbfa;
     --color-bg-white: #ffffff;
 
     /* ===== SHADOW COLOR ===== */
-    --color-shadow-soft: rgba(0, 0, 0, 0.04);
+    --color-shadow-soft: rgba(15, 23, 42, 0.06);
+    --color-shadow-teal: rgba(20, 184, 166, 0.28);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    background-color: var(--color-bg-main);
+    color: var(--color-text-primary);
+    letter-spacing: -0.01em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    letter-spacing: -0.015em;
+}
+
+button, input, select, textarea {
+    font-family: inherit;
 }

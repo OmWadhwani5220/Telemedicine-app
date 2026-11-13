@@ -6,6 +6,7 @@ export default function AdminPanel() {
     const navigate = useNavigate();
     const location = useLocation();
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Checking admin role
     useEffect(() => {
@@ -19,6 +20,11 @@ export default function AdminPanel() {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
+
+    // Close the mobile sidebar automatically whenever the route changes
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [location.pathname]);
 
     const handleLogout = () => {
         localStorage.clear();
@@ -34,10 +40,22 @@ export default function AdminPanel() {
 
     return (
         <div className="admin-layout">
+            {/* Mobile overlay (click to close sidebar) */}
+            {sidebarOpen && (
+                <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+            )}
+
             {/* Sidebar */}
-            <aside className="admin-sidebar">
+            <aside className={`admin-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
                 <div className="sidebar-header">
                     <h2>Admin Panel</h2>
+                    <button
+                        className="sidebar-close-btn"
+                        onClick={() => setSidebarOpen(false)}
+                        aria-label="Close menu"
+                    >
+                        ✕
+                    </button>
                 </div>
                 <nav className="sidebar-nav">
                     <NavLink to="/admin/dashboard" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
@@ -61,8 +79,19 @@ export default function AdminPanel() {
             <main className="admin-main">
                 {/* Top Bar */}
                 <header className="admin-topbar">
-                    <div className="greeting">
-                        <h3>{getGreeting()}</h3>
+                    <div className="topbar-left">
+                        <button
+                            className="hamburger-btn"
+                            onClick={() => setSidebarOpen(true)}
+                            aria-label="Open menu"
+                        >
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                        <div className="greeting">
+                            <h3>{getGreeting()}</h3>
+                        </div>
                     </div>
                     <div className="time-display">
                         <span className="date">{currentTime.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>

@@ -5,66 +5,99 @@
     animation: cardEntry 0.5s ease-out;
 }
 
+.page-title {
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--color-text-primary);
+}
+
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .search-bar input {
     padding: 10px 16px;
-    border: 1px solid var(--color-border-teal-light);
-    border-radius: 8px;
+    border: 1.5px solid var(--color-border-teal-light);
+    border-radius: 10px;
     width: 300px;
+    max-width: 100%;
     font-size: 14px;
     outline: none;
+    box-shadow: 0 1px 3px var(--color-shadow-soft);
     transition: border-color 0.2s, box-shadow 0.2s;
+    color: var(--color-text-primary);
+    background: var(--color-bg-white);
 }
 
 .search-bar input:focus {
     border-color: var(--color-primary-teal);
-    box-shadow: 0 0 0 3px var(--color-mint-bg);
+    box-shadow: 0 0 0 4px var(--color-mint-bg);
 }
 
+/* ============================================
+   TABLE — "row card" style
+============================================ */
 .table-container {
-    background: var(--color-bg-white);
-    border-radius: 12px;
-    box-shadow: 0 4px 6px var(--color-shadow-soft);
-    overflow: hidden;
+    background: transparent;
+    border-radius: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
 }
 
 .data-table {
     width: 100%;
-    border-collapse: collapse;
+    min-width: 520px;
+    border-collapse: separate;
+    border-spacing: 0 10px;
 }
 
-.data-table th,
-.data-table td {
-    padding: 16px 20px;
-    text-align: left;
-    border-bottom: 1px solid var(--color-border-very-light);
-}
-
-.data-table th {
-    background-color: var(--color-bg-main);
-    color: var(--color-text-secondary);
-    font-weight: 600;
+.data-table thead th {
+    background: transparent;
+    color: var(--color-text-muted);
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-align: left;
+    padding: 0 20px 10px;
+    border: none;
 }
 
 .data-table tbody tr {
-    transition: background-color 0.2s;
+    background: var(--color-mint-bg);
+    border: 1.5px dashed var(--color-primary-teal);
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 
 .data-table tbody tr:hover {
     background-color: var(--color-mint-hover);
+    box-shadow: 0 6px 16px var(--color-shadow-teal);
+    transform: translateY(-1px);
 }
 
 .data-table td {
     color: var(--color-text-primary);
-    font-size: 0.95rem;
+    font-size: 0.92rem;
+    padding: 16px 20px;
+    text-align: left;
+    border-top: 1.5px dashed var(--color-primary-teal);
+    border-bottom: 1.5px dashed var(--color-primary-teal);
+}
+
+.data-table td:first-child {
+    border-left: 1.5px dashed var(--color-primary-teal);
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.data-table td:last-child {
+    border-right: 1.5px dashed var(--color-primary-teal);
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
 .pagination {
@@ -72,27 +105,30 @@
     justify-content: center;
     gap: 8px;
     padding: 1rem;
-    background-color: var(--color-bg-white);
+    background-color: transparent;
 }
 
 .page-btn {
-    padding: 8px 12px;
-    border: 1px solid var(--color-border-very-light);
+    padding: 8px 14px;
+    border: 1.5px solid var(--color-border-soft);
     background-color: var(--color-bg-white);
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     color: var(--color-text-secondary);
+    font-weight: 500;
     transition: all 0.2s;
 }
 
 .page-btn:hover:not(:disabled) {
-    background-color: var(--color-bg-main);
+    background-color: var(--color-mint-bg);
+    border-color: var(--color-border-teal-light);
 }
 
 .page-btn.active {
     background-color: var(--color-primary-teal);
     color: var(--color-bg-white);
     border-color: var(--color-primary-teal);
+    box-shadow: 0 4px 10px var(--color-shadow-teal);
 }
 
 .page-btn:disabled {
@@ -104,5 +140,27 @@
     text-align: center;
     color: var(--color-text-muted);
     font-style: italic;
-    padding: 2rem !important;
+    padding: 2.5rem !important;
+}
+
+/* ============================================
+   RESPONSIVE
+============================================ */
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 1.3rem;
+    }
+
+    .search-bar input {
+        width: 100%;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+    }
+
+    .data-table td,
+    .data-table thead th {
+        padding: 12px 14px;
+    }
 }

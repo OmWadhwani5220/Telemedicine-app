@@ -5,6 +5,8 @@ import {
   AlertCircle, ArrowRight,
 } from "lucide-react";
 import { getPatientProfile, getMyAppointments } from "../services/api";
+import TranslatedText from "./TranslatedText";
+import { useTranslatedText } from "../context/LanguageContext";
 
 export default function Dashboard({ patientName = "Patient", navigateTo, profileComplete }) {
   const [patient,      setPatient]      = useState(null);
@@ -48,14 +50,18 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
     completed: "bg-blue-100 text-blue-700",
   };
 
+  const lockedTitle = useTranslatedText("Complete your profile to unlock");
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
 
       {/* ── Top Bar ── */}
       <nav className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
         <div>
-          <h1 className="text-gray-800 text-lg sm:text-xl font-semibold">Dashboard</h1>
-          <p className="text-gray-400 text-sm">Welcome back, {patientName} 👋</p>
+          <h1 className="text-gray-800 text-lg sm:text-xl font-semibold"><TranslatedText>Dashboard</TranslatedText></h1>
+          <p className="text-gray-400 text-sm">
+            <TranslatedText>Welcome back,</TranslatedText> {patientName} 👋
+          </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           <button className="p-2 hover:bg-gray-100 rounded-lg relative">
@@ -79,9 +85,11 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
                 <AlertCircle className="w-5 h-5 text-amber-500" />
               </div>
               <div>
-                <p className="text-amber-900 font-semibold text-sm">Complete Your Profile</p>
+                <p className="text-amber-900 font-semibold text-sm"><TranslatedText>Complete Your Profile</TranslatedText></p>
                 <p className="text-amber-700 text-xs mt-0.5">
-                  Fill in your profile details to unlock appointments, symptom checker, and all other features.
+                  <TranslatedText>
+                    Fill in your profile details to unlock appointments, symptom checker, and all other features.
+                  </TranslatedText>
                 </p>
               </div>
             </div>
@@ -89,7 +97,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
               onClick={() => navigateTo("settings")}
               className="flex items-center justify-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-xl transition-colors flex-shrink-0"
             >
-              Complete Profile <ArrowRight className="w-4 h-4" />
+              <TranslatedText>Complete Profile</TranslatedText> <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -101,7 +109,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
               <User className="w-6 h-6 sm:w-8 sm:h-8 " />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-emerald-100 text-xs sm:text-sm">Patient</p>
+              <p className="text-emerald-100 text-xs sm:text-sm"><TranslatedText>Patient</TranslatedText></p>
               <h2 className="text-lg sm:text-2xl font-bold truncate text-white" >{patientName}</h2>
               {patient && (
                 <div className="flex flex-wrap gap-2 mt-1 text-xs sm:text-sm text-emerald-100">
@@ -119,7 +127,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
               onClick={() => navigateTo("settings")}
               className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-xs sm:text-sm transition-all flex-shrink-0"
             >
-              Edit Profile
+              <TranslatedText>Edit Profile</TranslatedText>
             </button>
           </div>
 
@@ -127,22 +135,22 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
             <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-4 pt-4 border-t text-white border-white border-opacity-20">
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-bold">{patient.height ?? "—"}</p>
-                <p className="text-emerald-100 text-xs text-white">Height (cm)</p>
+                <p className="text-emerald-100 text-xs text-white"><TranslatedText>Height (cm)</TranslatedText></p>
               </div>
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-bold">{patient.weight ?? "—"}</p>
-                <p className="text-emerald-100 text-xs text-white">Weight (kg)</p>
+                <p className="text-emerald-100 text-xs text-white"><TranslatedText>Weight (kg)</TranslatedText></p>
               </div>
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-bold">{appointments.length}</p>
-                <p className="text-emerald-100 text-xs text-white">Appointments</p>
+                <p className="text-emerald-100 text-xs text-white"><TranslatedText>Appointments</TranslatedText></p>
               </div>
             </div>
           )}
         </div>
 
         {/* Quick Links Grid */}
-        <h3 className="text-gray-700 font-semibold mb-3 text-sm sm:text-base">Quick Access</h3>
+        <h3 className="text-gray-700 font-semibold mb-3 text-sm sm:text-base"><TranslatedText>Quick Access</TranslatedText></h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6">
           {quickLinks.map(({ label, icon: Icon, screen, bg, text }) => {
             const locked = isLocked(screen);
@@ -150,13 +158,15 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
               <button
                 key={screen}
                 onClick={() => navigateTo(screen)}
-                title={locked ? "Complete your profile to unlock" : label}
+                title={locked ? lockedTitle : undefined}
                 className={`relative ${bg} rounded-xl p-3 sm:p-4 flex flex-col items-center gap-1.5 sm:gap-2
                   hover:scale-105 transition-transform shadow-sm
                   ${locked ? "opacity-50" : ""}`}
               >
                 <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${text}`} />
-                <span className={`text-xs font-medium ${text} text-center leading-tight`}>{label}</span>
+                <span className={`text-xs font-medium ${text} text-center leading-tight`}>
+                  <TranslatedText>{label}</TranslatedText>
+                </span>
                 {locked && (
                   <span className="absolute top-1.5 right-1.5 text-xs">🔒</span>
                 )}
@@ -168,12 +178,12 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
         {/* Recent Appointments */}
         <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-800 font-semibold text-sm sm:text-base">Recent Appointments</h3>
+            <h3 className="text-gray-800 font-semibold text-sm sm:text-base"><TranslatedText>Recent Appointments</TranslatedText></h3>
             <button
               onClick={() => navigateTo("appointments")}
               className="text-emerald-600 text-xs sm:text-sm flex items-center hover:underline"
             >
-              Book new <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+              <TranslatedText>Book new</TranslatedText> <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
           </div>
 
@@ -184,13 +194,13 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
           ) : appointments.length === 0 ? (
             <div className="text-center py-8 sm:py-10">
               <Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-400 text-sm">No appointments yet</p>
+              <p className="text-gray-400 text-sm"><TranslatedText>No appointments yet</TranslatedText></p>
               {profileComplete && (
                 <button
                   onClick={() => navigateTo("appointments")}
                   className="mt-3 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600 transition-colors"
                 >
-                  Book your first appointment
+                  <TranslatedText>Book your first appointment</TranslatedText>
                 </button>
               )}
               {!profileComplete && (
@@ -198,7 +208,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
                   onClick={() => navigateTo("settings")}
                   className="mt-3 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm hover:bg-amber-600 transition-colors"
                 >
-                  Complete profile first
+                  <TranslatedText>Complete profile first</TranslatedText>
                 </button>
               )}
             </div>
@@ -212,7 +222,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-gray-800 text-xs sm:text-sm font-medium truncate">
-                      {appt.doctorId?.name ?? "Doctor"}
+                      {appt.doctorId?.name ?? <TranslatedText>Doctor</TranslatedText>}
                     </p>
                     <p className="text-gray-500 text-xs hidden sm:block">
                       {appt.doctorId?.specialization ?? ""}
@@ -225,7 +235,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
                   <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium flex-shrink-0 ${
                     statusColors[appt.status] ?? "bg-gray-100 text-gray-600"
                   }`}>
-                    {appt.status}
+                    <TranslatedText>{appt.status}</TranslatedText>
                   </span>
                 </div>
               ))}

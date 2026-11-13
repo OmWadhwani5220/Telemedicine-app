@@ -1,10 +1,15 @@
+import { useLanguage } from "../context/LanguageContext";
+import TranslatedText from "./TranslatedText";
+
 import React, { useState, useEffect } from "react";
 import {
   Home, Activity, Calendar, Video,
   FileText, FileCheck, MessageSquare,
   Settings, LogOut, Heart, ChevronRight,
   Bell, Search, AlertCircle, User,
+  Languages, ChevronDown,
 } from "lucide-react";
+
 
 // Brand colors matching #0d9286
 const B = "#0d9286";
@@ -34,6 +39,19 @@ export default function Layout({
   profileChecked,
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [languageOpen, setLanguageOpen] =
+  useState(false);
+
+const {
+  language,
+  setLanguage,
+  languages,
+} = useLanguage();
+
+const handleLanguageChange = (selected) => {
+  setLanguage(selected.code);
+  setLanguageOpen(false);
+};
 
   const safeName  = patientName || "Patient";
   const initials  = safeName.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase() || "P";
@@ -122,8 +140,14 @@ export default function Layout({
           >
             <AlertCircle size={13} color="#F59E0B" style={{ flexShrink:0, marginTop:1 }} />
             <div>
-              <p style={{ color:"#FCD34D", fontSize:11, fontWeight:600, margin:0 }}>Profile Incomplete</p>
-              <p style={{ color:"rgba(252,211,77,0.6)", fontSize:10, margin:0, marginTop:1 }}>Tap to complete profile</p>
+              <p style={{ color:"#FCD34D", fontSize:11, fontWeight:600, margin:0 }}>
+                 <TranslatedText>
+    Profile Incomplete
+  </TranslatedText>
+              </p>
+              <p style={{ color:"rgba(252,211,77,0.6)", fontSize:10, margin:0, marginTop:1 }}><TranslatedText>
+    Tap to complete profile
+  </TranslatedText></p>
             </div>
           </div>
         )}
@@ -184,7 +208,10 @@ export default function Layout({
                 }}>
                   <Icon size={17} />
                 </div>
-                {expanded && <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis" }}>{label}</span>}
+                {expanded && <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis" }}><TranslatedText>
+      {label}
+    </TranslatedText>
+                  </span>}
                 {expanded && locked && <span style={{ fontSize:10, opacity:0.4 }}>🔒</span>}
               </button>
             );
@@ -193,6 +220,187 @@ export default function Layout({
 
         {/* BOTTOM */}
         <div style={{ padding:"10px 8px 14px", borderTop:"1px solid rgba(255,255,255,0.06)", flexShrink:0 }}>
+          {/* Languages */}
+<div
+  style={{
+    position: "relative",
+    marginBottom: 8,
+  }}
+>
+  <button
+    onClick={() =>
+      setLanguageOpen((value) => !value)
+    }
+    title={
+  !expanded
+    ? `Language: ${languages[language]?.name || "English"}`
+    : undefined
+}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: expanded ? 12 : 0,
+      justifyContent: expanded
+        ? "flex-start"
+        : "center",
+      width: "100%",
+      padding: expanded
+        ? "9px 12px"
+        : "9px",
+      borderRadius: 12,
+      border: "none",
+      cursor: "pointer",
+      background: languageOpen
+        ? B_LIGHT
+        : "transparent",
+      color: languageOpen
+        ? B
+        : "rgba(255,255,255,0.35)",
+      fontSize: 13,
+      fontWeight: languageOpen
+        ? 600
+        : 400,
+      transition: "all 0.15s",
+      fontFamily: "inherit",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+    }}
+  >
+    {/* Language icon */}
+    <div
+      style={{
+        width: 34,
+        height: 34,
+        borderRadius: 9,
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: languageOpen
+          ? `${B}22`
+          : "rgba(255,255,255,0.04)",
+      }}
+    >
+      <Languages size={17} />
+    </div>
+
+    {/* Language text */}
+   {/* Language text */}
+{expanded && (
+  <>
+    <span
+      style={{
+        flex: 1,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
+    >
+      <TranslatedText>
+        Languages
+      </TranslatedText>
+    </span>
+
+    <ChevronDown
+      size={15}
+      style={{
+        transform: languageOpen
+          ? "rotate(180deg)"
+          : "rotate(0deg)",
+        transition: "transform 0.2s ease",
+      }}
+    />
+  </>
+)}
+  </button>
+
+  {/* Dropdown */}
+  {languageOpen && (
+    <div
+      style={{
+        position: expanded
+          ? "relative"
+          : "absolute",
+
+        left: expanded
+          ? 0
+          : 56,
+
+        bottom: expanded
+          ? "auto"
+          : 0,
+
+        width: expanded
+          ? "100%"
+          : 180,
+
+        marginTop: expanded
+          ? 6
+          : 0,
+
+        padding: 6,
+
+        background: "#ffffff",
+
+        border: "1px solid #e2e8f0",
+
+        borderRadius: 12,
+
+        boxShadow:
+          "0 10px 30px rgba(0,0,0,0.25)",
+
+        zIndex: 100,
+      }}
+    >
+     {Object.values(languages).map((item) => {
+  const isSelected = language === item.code;
+
+  return (
+    <button
+      key={item.code}
+      onClick={() =>
+        handleLanguageChange(item)
+      }
+      style={{
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "9px 10px",
+        border: "none",
+        borderRadius: 9,
+        background: isSelected
+          ? B_LIGHT
+          : "transparent",
+        color: isSelected
+          ? B
+          : "#334155",
+        cursor: "pointer",
+        fontSize: 12.5,
+        fontWeight: isSelected
+          ? 600
+          : 400,
+        fontFamily: "inherit",
+        textAlign: "left",
+      }}
+    >
+      <span>{item.nativeName}</span>
+
+      {isSelected && (
+        <span
+          style={{
+            color: B,
+            fontWeight: 700,
+          }}
+        >
+          ✓
+        </span>
+      )}
+    </button>
+  );
+})}
+    </div>
+  )}
+</div>
           {/* Logout */}
           <button
             onClick={handleLogout}
@@ -213,7 +421,11 @@ export default function Layout({
             <div style={{ width:34, height:34, borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(255,255,255,0.04)", flexShrink:0 }}>
               <LogOut size={16} />
             </div>
-            {expanded && "Logout"}
+           {expanded && (
+  <TranslatedText>
+    Logout
+  </TranslatedText>
+)}
           </button>
 
           {/* Avatar chip */}
@@ -231,7 +443,12 @@ export default function Layout({
             {expanded && (
               <div style={{ overflow:"hidden" }}>
                 <p style={{ margin:0, fontSize:12.5, fontWeight:600, color:"#fff", lineHeight:1.3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{safeName}</p>
-                <p style={{ margin:0, fontSize:10, color:"rgba(255,255,255,0.55)" }}>Patient</p>
+                <p style={{ margin:0, fontSize:10, color:"rgba(255,255,255,0.55)" }}>
+                  <TranslatedText>
+    Patient
+  </TranslatedText>
+
+                </p>
               </div>
             )}
           </div>
@@ -297,7 +514,11 @@ export default function Layout({
               </div>
               <div style={{ display:"flex", flexDirection:"column" }}>
                 <span style={{ fontSize:12, fontWeight:600, color:"#0f172a", lineHeight:1.2 }}>{firstName}</span>
-                <span style={{ fontSize:10, color:"#94a3b8" }}>Patient</span>
+                <span style={{ fontSize:10, color:"#94a3b8" }}>
+                  <TranslatedText>
+    Patient
+  </TranslatedText>
+                </span>
               </div>
             </div>
           </div>

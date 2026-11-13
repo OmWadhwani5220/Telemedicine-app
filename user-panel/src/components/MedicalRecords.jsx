@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { FileText, Lock, Eye, Calendar, User, Bell, Search, Shield } from "lucide-react";
+import TranslatedText from "./TranslatedText";
+import { useTranslatedText } from "../context/LanguageContext";
 
 const RECORDS = [
   { id:"1", date:"Nov 28, 2024", doctor:"Dr. Sarah Johnson",  type:"Cardiology Consultation",  diagnosis:"Regular checkup – Heart function normal",     prescription:"Continue regular exercise and maintain healthy diet" },
@@ -19,6 +21,7 @@ const TYPE_COLOR = {
 
 export function MedicalRecords({ navigateTo }) {
   const [q, setQ] = useState("");
+  const searchPlaceholder = useTranslatedText("Search by doctor, type or date…");
 
   const filtered = RECORDS.filter(r =>
     r.doctor.toLowerCase().includes(q.toLowerCase()) ||
@@ -32,8 +35,8 @@ export function MedicalRecords({ navigateTo }) {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
         <div className="flex items-center justify-between px-4 sm:px-6 py-4">
           <div className="pl-10 lg:pl-0">
-            <h1 className="text-gray-800 font-bold text-lg">Medical Records</h1>
-            <p className="text-gray-400 text-xs hidden sm:block">Your encrypted health history</p>
+            <h1 className="text-gray-800 font-bold text-lg"><TranslatedText>Medical Records</TranslatedText></h1>
+            <p className="text-gray-400 text-xs hidden sm:block"><TranslatedText>Your encrypted health history</TranslatedText></p>
           </div>
           <button className="relative p-2 hover:bg-gray-100 rounded-xl">
             <Bell className="w-5 h-5 text-gray-500" />
@@ -51,9 +54,11 @@ export function MedicalRecords({ navigateTo }) {
             <Shield className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <p className="text-gray-800 font-semibold text-sm">Secure & Encrypted</p>
+            <p className="text-gray-800 font-semibold text-sm"><TranslatedText>Secure & Encrypted</TranslatedText></p>
             <p className="text-gray-500 text-xs mt-0.5 leading-relaxed">
-              All records are end-to-end encrypted. Only you and your authorized healthcare providers can access them.
+              <TranslatedText>
+                All records are end-to-end encrypted. Only you and your authorized healthcare providers can access them.
+              </TranslatedText>
             </p>
           </div>
         </div>
@@ -64,7 +69,7 @@ export function MedicalRecords({ navigateTo }) {
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Search by doctor, type or date…"
+            placeholder={searchPlaceholder}
             className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm
               focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent
               shadow-sm placeholder-gray-400"
@@ -77,7 +82,7 @@ export function MedicalRecords({ navigateTo }) {
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FileText className="w-8 h-8 text-gray-300" />
             </div>
-            <p className="text-gray-500 font-medium">No records match your search</p>
+            <p className="text-gray-500 font-medium"><TranslatedText>No records match your search</TranslatedText></p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -94,15 +99,15 @@ export function MedicalRecords({ navigateTo }) {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-gray-800 font-semibold text-sm">{r.type}</p>
+                    <p className="text-gray-800 font-semibold text-sm"><TranslatedText>{r.type}</TranslatedText></p>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-xs text-gray-400">
                       <span className="flex items-center gap-1"><Calendar className="w-3 h-3"/>{r.date}</span>
                       <span className="flex items-center gap-1"><User className="w-3 h-3"/>{r.doctor}</span>
                       <span className="flex items-center gap-1 text-green-600">
-                        <Lock className="w-3 h-3"/>Encrypted
+                        <Lock className="w-3 h-3"/><TranslatedText>Encrypted</TranslatedText>
                       </span>
                     </div>
-                    <p className="text-gray-400 text-xs mt-1.5 line-clamp-1">{r.diagnosis}</p>
+                    <p className="text-gray-400 text-xs mt-1.5 line-clamp-1"><TranslatedText>{r.diagnosis}</TranslatedText></p>
                   </div>
 
                   {/* Button */}
@@ -112,7 +117,7 @@ export function MedicalRecords({ navigateTo }) {
                       text-white rounded-xl text-xs font-semibold transition-colors flex-shrink-0"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">View</span>
+                    <span className="hidden sm:inline"><TranslatedText>View</TranslatedText></span>
                   </button>
                 </div>
               </div>

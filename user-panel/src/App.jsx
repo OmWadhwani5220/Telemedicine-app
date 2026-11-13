@@ -15,6 +15,7 @@ import { MedicalRecords }      from "./components/MedicalRecords";
 import { Prescriptions }       from "./components/Prescriptions";
 import { Messages }            from "./components/Messages";
 
+import { LanguageProvider } from "./context/LanguageContext";
 // RecordDetails may not exist yet — lazy with fallback
 let RecordDetails = null;
 try {
@@ -161,6 +162,7 @@ export default function App() {
   };
 
   return (
+     <LanguageProvider>
     <Layout
       currentScreen={currentScreen}
       navigateTo={handleNavigate}
@@ -171,5 +173,6 @@ export default function App() {
     >
       {renderScreen()}
     </Layout>
+  </LanguageProvider>
   );
 }
