@@ -5,7 +5,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { body, validationResult } from "express-validator";
-
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
@@ -14,6 +13,7 @@ import meetingRoutes from "./routes/meetingRoutes.js";
 import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 import Contact from "./models/Contact.js";
 import Signup from "./models/Signup.js";
+import translationRoutes from "./routes/translationRoutes.js";
 
 dotenv.config();
 
@@ -86,6 +86,7 @@ const corsOptions = {
 // CORS must be registered before API routes
 app.use(cors(corsOptions));
 app.use("/api/prescriptions", prescriptionRoutes);
+app.use("/api/groq", translationRoutes);
 // Handle preflight requests
 app.options(/.*/, cors(corsOptions));
 
