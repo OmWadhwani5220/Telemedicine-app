@@ -53,7 +53,7 @@ export function RecordDetails({ record, navigateTo }) {
       <main className="px-4 sm:px-6 py-6 max-w-2xl mx-auto space-y-4">
 
         {/* Secure badge */}
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200
+        <div className="bg-linear-to-r from-green-50 to-emerald-50 border border-green-200
           rounded-2xl p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center">
@@ -147,7 +147,7 @@ export function RecordDetails({ record, navigateTo }) {
 
         {/* Actions */}
         <div className="flex gap-3 pb-6">
-          <button className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r
+          <button className="flex-1 flex items-center justify-center gap-2 py-3 bg-linear-to-r
             from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-semibold
             hover:from-emerald-600 hover:to-teal-600 transition-all shadow-sm">
             <Download className="w-4 h-4" />

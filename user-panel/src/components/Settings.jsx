@@ -178,7 +178,7 @@ export function Settings({
           {/* ── Complete your profile toast ── */}
           {showIncompleteToast && (
             <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
-              <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-amber-800 font-semibold text-sm">
                   <TranslatedText>Complete your profile first</TranslatedText>
@@ -253,7 +253,7 @@ export function Settings({
 
             {/* Avatar */}
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-100 rounded-full flex items-center justify-center shrink-0">
                 <User className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-600" />
               </div>
               <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">

@@ -94,7 +94,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
       <div className="db-topline">
         <div className="db-greeting">
           <h1>
-            <TranslatedText>Hello,</TranslatedText> {patientName} 👋
+            <TranslatedText>Hello,</TranslatedText> {patientName} 
           </h1>
           <p>
             <TranslatedText>

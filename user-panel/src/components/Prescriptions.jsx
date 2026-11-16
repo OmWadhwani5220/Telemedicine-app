@@ -118,7 +118,7 @@ export function Prescriptions({ navigateTo }) {
               <button className="w-full flex items-start justify-between p-5 text-left hover:bg-gray-50 transition-colors"
                 onClick={() => toggleExpand(item._id)}>
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                     <FileText size={18} className="text-teal-600" />
                   </div>
                   <div>
@@ -135,7 +135,7 @@ export function Prescriptions({ navigateTo }) {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+                <div className="flex items-center gap-2 shrink-0 mt-1">
                   <span className="text-xs text-gray-400 font-mono bg-gray-100 px-2 py-0.5 rounded">
                     {item.meetingId}
                   </span>
@@ -168,7 +168,7 @@ export function Prescriptions({ navigateTo }) {
                       <div className="space-y-2">
                         {rx.medications.filter(m => m.name).map((med, i) => (
                           <div key={i} className="flex items-start gap-3 bg-blue-50 rounded-xl px-4 py-3 border border-blue-100">
-                            <Pill size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                            <Pill size={16} className="text-blue-500 mt-0.5 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-gray-800">{med.name}</p>
                               <div className="flex flex-wrap gap-3 mt-1">
@@ -206,7 +206,7 @@ export function Prescriptions({ navigateTo }) {
                   {/* Follow-up */}
                   {rx.followUpDate && (
                     <div className="flex items-center gap-3 bg-orange-50 rounded-xl px-4 py-3 border border-orange-100">
-                      <Calendar size={16} className="text-orange-500 flex-shrink-0" />
+                      <Calendar size={16} className="text-orange-500 shrink-0" />
                       <div>
                         <p className="text-xs text-orange-600 font-medium">
                           <TranslatedText>Follow-up Appointment</TranslatedText>
