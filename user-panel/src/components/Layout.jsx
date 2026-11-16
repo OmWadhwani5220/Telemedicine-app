@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import TranslatedText from "./TranslatedText";
-import { useTranslatedText } from "../context/LanguageContext";
+import { useTranslatedText, useLanguage } from "../context/LanguageContext";
 import {
   Home, Activity, Calendar, Video,
   FileText, FileCheck,
   Settings, LogOut, Heart, ChevronRight,
-  Bell, Search, AlertCircle, User,
+  Bell, Search, AlertCircle, User, Languages, ChevronDown,
 } from "lucide-react";
 
 // Brand colors matching #0d9286
@@ -25,6 +25,12 @@ const NAV_ITEMS = [
 
 const PROTECTED = ["appointments","symptoms","video","records","prescriptions"];
 
+const LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "hi", label: "Hindi" },
+  { code: "pa", label: "Punjabi" },
+];
+
 export default function Layout({
   children,
   currentScreen,
@@ -35,12 +41,15 @@ export default function Layout({
   profileChecked,
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const { language, changeLanguage } = useLanguage();
 
   const lockedTitle = useTranslatedText("Complete your profile to unlock");
   const searchPlaceholder = useTranslatedText("Search…");
   const collapseTitle = useTranslatedText("Collapse");
   const expandTitle = useTranslatedText("Expand");
   const logoutTitle = useTranslatedText("Logout");
+  const languageTitle = useTranslatedText("Language");
 
   const safeName  = patientName || "Patient";
   const initials  = safeName.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase() || "P";
@@ -200,6 +209,77 @@ export default function Layout({
 
         {/* BOTTOM */}
         <div style={{ padding:"10px 8px 14px", borderTop:"1px solid rgba(255,255,255,0.06)", flexShrink:0 }}>
+          {/* Language selector */}
+          <div style={{ position:"relative", marginBottom:8 }}>
+            <button
+              type="button"
+              onClick={() => setLanguageOpen(v => !v)}
+              title={!expanded ? languageTitle : undefined}
+              style={{
+                display:"flex", alignItems:"center",
+                gap: expanded ? 12 : 0,
+                justifyContent: expanded ? "flex-start" : "center",
+                width:"100%", padding: expanded ? "9px 12px" : "9px",
+                borderRadius:12, border:"none", cursor:"pointer",
+                background: languageOpen ? "rgba(255,255,255,0.08)" : "transparent",
+                color:"rgba(255,255,255,0.55)",
+                fontSize:13, fontFamily:"inherit", transition:"all 0.15s",
+              }}
+            >
+              <div style={{ width:34, height:34, borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(255,255,255,0.04)", flexShrink:0 }}>
+                <Languages size={17} />
+              </div>
+              {expanded && (
+                <>
+                  <span style={{ flex:1, textAlign:"left" }}><TranslatedText>Language</TranslatedText></span>
+                  <ChevronDown size={15} style={{ transform:languageOpen ? "rotate(180deg)" : "rotate(0deg)", transition:"transform 0.2s" }} />
+                </>
+              )}
+            </button>
+
+            {languageOpen && (
+              <div style={{
+                position:"fixed",
+                left: expanded ? 12 : 72,
+                bottom: 82,
+                width:180,
+                padding:6,
+                background:"#fff",
+                border:"1px solid #e2e8f0",
+                borderRadius:12,
+                boxShadow:"0 10px 30px rgba(0,0,0,0.22)",
+                zIndex:1000,
+              }}>
+                {LANGUAGES.map(item => {
+                  const selected = language === item.code;
+                  return (
+                    <button
+                      type="button"
+                      key={item.code}
+                      onClick={() => {
+                        changeLanguage(item.code);
+                        setLanguageOpen(false);
+                      }}
+                      style={{
+                        width:"100%", display:"flex", alignItems:"center",
+                        justifyContent:"space-between", padding:"9px 10px",
+                        border:"none", borderRadius:9,
+                        background:selected ? B_LIGHT : "transparent",
+                        color:selected ? B : "#334155",
+                        cursor:"pointer", fontSize:12.5,
+                        fontWeight:selected ? 600 : 400,
+                        fontFamily:"inherit", textAlign:"left",
+                      }}
+                    >
+                      <span>{item.label}</span>
+                      {selected && <span style={{ color:B, fontWeight:700 }}>✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Logout */}
           <button
             onClick={handleLogout}
