@@ -5,8 +5,6 @@ import {
   Video, User, Ruler, Weight, Droplet, Stethoscope,
 } from "lucide-react";
 import { getPatientProfile, getMyAppointments } from "../services/api";
-import TranslatedText from "./TranslatedText";
-import { useTranslatedText } from "../context/LanguageContext";
 import "./Dashboard.css";
 
 const BACKEND_URL = import.meta.env?.VITE_BACKEND_URL || "https://telemedicine-app-mr3o.onrender.com";
@@ -16,8 +14,6 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
   const [appointments,  setAppointments]  = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading,       setLoading]       = useState(true);
-
-  const lockedTitle = useTranslatedText("Complete your profile to unlock");
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -83,7 +79,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
       {/* ── Greeting ── */}
       <div className="db-topline">
         <div className="db-greeting">
-          <h1><TranslatedText>Hello,</TranslatedText> {patientName} 👋</h1>
+          <h1>Hello, {patientName} 👋</h1>
           <p>Here's an overview of your health &amp; upcoming care</p>
         </div>
       </div>
@@ -95,8 +91,8 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
             <AlertCircle size={19} color="#f59e0b" />
           </div>
           <div className="db-alert-text">
-            <p><TranslatedText>Complete Your Profile</TranslatedText></p>
-            <p><TranslatedText>Fill in your profile details to unlock appointments, symptom checker, and all other features.</TranslatedText></p>
+            <p>Complete Your Profile</p>
+            <p>Fill in your profile details to unlock appointments, symptom checker, and all other features.</p>
           </div>
           <button className="db-alert-btn" onClick={() => navigateTo("settings")}>
             Complete Profile <ArrowRight size={14} />
@@ -108,8 +104,8 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
       <div className="db-hero-row">
         <div className="db-banner">
           <div className="db-banner-text">
-            <h2><TranslatedText>Welcome to your Patient Dashboard</TranslatedText></h2>
-            <p><TranslatedText>Book appointments, track prescriptions, and manage your health records — all in one place.</TranslatedText></p>
+            <h2>Welcome to your Patient Dashboard</h2>
+            <p>Book appointments, track prescriptions, and manage your health records — all in one place.</p>
             <div className="db-banner-actions">
               <button className="db-btn db-btn-solid" onClick={() => navigateTo("appointments")}>
                 <Calendar size={15} /> Book Appointment
@@ -125,25 +121,25 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
         </div>
 
         <div className="db-health-card">
-          <h3><TranslatedText>Health Overview</TranslatedText></h3>
+          <h3>Health Overview</h3>
           <div className="db-health-row">
             <span className="db-health-label">
               <span className="db-health-dot" style={{ background: "#10b981" }} />
-              <TranslatedText>Blood Group</TranslatedText>
+              Blood Group
             </span>
             <span className="db-health-value">{patient?.bloodGroup || "—"}</span>
           </div>
           <div className="db-health-row">
             <span className="db-health-label">
               <span className="db-health-dot" style={{ background: "#3b82f6" }} />
-              <TranslatedText>Gender</TranslatedText>
+              Gender
             </span>
             <span className="db-health-value">{patient?.gender || "—"}</span>
           </div>
           <div className="db-health-row">
             <span className="db-health-label">
               <span className="db-health-dot" style={{ background: "#f59e0b" }} />
-              <TranslatedText>Phone</TranslatedText>
+              Phone
             </span>
             <span className="db-health-value">{patient?.phone || "—"}</span>
           </div>
@@ -166,7 +162,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
           {/* Quick access */}
           <div className="db-panel">
             <div className="db-panel-head">
-              <h3><TranslatedText>Quick Access</TranslatedText></h3>
+              <h3>Quick Access</h3>
             </div>
             <div className="db-quick-grid">
               {quickLinks.map(({ label, icon: Icon, screen, color }) => {
@@ -176,13 +172,13 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
                     key={screen}
                     className={`db-quick-tile${locked ? " db-locked" : ""}`}
                     onClick={() => !locked && navigateTo(screen)}
-                    title={locked ? lockedTitle : undefined}
+                    title={locked ? "Complete your profile to unlock" : label}
                   >
                     {locked && <span className="db-quick-lock">🔒</span>}
                     <div className="db-quick-icon" style={{ background: `${color}1a` }}>
                       <Icon size={19} color={color} />
                     </div>
-                    <span><TranslatedText>{label}</TranslatedText></span>
+                    <span>{label}</span>
                   </div>
                 );
               })}
@@ -192,7 +188,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
           {/* Recent appointments table */}
           <div className="db-panel">
             <div className="db-panel-head">
-              <h3><TranslatedText>Recent Appointments</TranslatedText></h3>
+              <h3>Recent Appointments</h3>
               <button className="db-panel-link" onClick={() => navigateTo("appointments")}>
                 Book new <ChevronRight size={13} />
               </button>
@@ -203,22 +199,22 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
             ) : appointments.length === 0 ? (
               <div className="db-empty">
                 <div className="db-empty-icon"><Calendar size={22} color="#94a3b8" /></div>
-                <p><TranslatedText>No appointments yet</TranslatedText></p>
+                <p>No appointments yet</p>
                 <button
                   className="db-empty-btn"
                   onClick={() => navigateTo(profileComplete ? "appointments" : "settings")}
                 >
-                  {profileComplete ? <TranslatedText>Book your first appointment</TranslatedText> : <TranslatedText>Complete profile first</TranslatedText>}
+                  {profileComplete ? "Book your first appointment" : "Complete profile first"}
                 </button>
               </div>
             ) : (
               <table className="db-table">
                 <thead>
                   <tr>
-                    <th><TranslatedText>Doctor</TranslatedText></th>
-                    <th><TranslatedText>Status</TranslatedText></th>
-                    <th><TranslatedText>Date</TranslatedText></th>
-                    <th><TranslatedText>Time</TranslatedText></th>
+                    <th>Doctor</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Time</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -230,14 +226,14 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
                             {initialsOf(appt.doctorId?.name)}
                           </div>
                           <div>
-                            <div className="db-doc-name"><TranslatedText>Dr.</TranslatedText> {appt.doctorId?.name ?? <TranslatedText>Doctor</TranslatedText>}</div>
+                            <div className="db-doc-name">Dr. {appt.doctorId?.name ?? "Doctor"}</div>
                             <div className="db-doc-spec">{appt.doctorId?.specialization ?? ""}</div>
                           </div>
                         </div>
                       </td>
                       <td>
                         <span className={`status-pill status-${appt.status || "pending"}`}>
-                          <TranslatedText>{appt.status || "pending"}</TranslatedText>
+                          {appt.status || "pending"}
                         </span>
                       </td>
                       <td>{fmtDate(appt.date)}</td>
@@ -257,9 +253,9 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
           {/* Appointment timeline */}
           <div className="db-panel">
             <div className="db-panel-head">
-              <h3><TranslatedText>Appointment Timeline</TranslatedText></h3>
+              <h3>Appointment Timeline</h3>
               <button className="db-panel-link" onClick={() => navigateTo("appointments")}>
-                <TranslatedText>See All</TranslatedText> <ChevronRight size={13} />
+                See All <ChevronRight size={13} />
               </button>
             </div>
 
@@ -267,7 +263,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
               <div className="db-spin" />
             ) : upcoming.length === 0 ? (
               <div className="db-empty">
-                <p><TranslatedText>No upcoming appointments</TranslatedText></p>
+                <p>No upcoming appointments</p>
               </div>
             ) : (
               <div className="db-timeline">
@@ -278,7 +274,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
                     </div>
                     <div>
                       <div className="db-timeline-date">{fmtDate(appt.date)} · {appt.timeSlot}</div>
-                      <p className="db-timeline-title"><TranslatedText>Dr.</TranslatedText> {appt.doctorId?.name ?? <TranslatedText>Doctor</TranslatedText>}</p>
+                      <p className="db-timeline-title">Dr. {appt.doctorId?.name ?? "Doctor"}</p>
                       <p className="db-timeline-sub">{appt.doctorId?.specialization ?? appt.consultationType ?? ""}</p>
                     </div>
                   </div>
@@ -290,9 +286,9 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
           {/* Prescriptions preview */}
           <div className="db-panel">
             <div className="db-panel-head">
-              <h3><TranslatedText>Recent Prescriptions</TranslatedText></h3>
+              <h3>Recent Prescriptions</h3>
               <button className="db-panel-link" onClick={() => navigateTo("prescriptions")}>
-                <TranslatedText>See All</TranslatedText> <ChevronRight size={13} />
+                See All <ChevronRight size={13} />
               </button>
             </div>
 
@@ -300,7 +296,7 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
               <div className="db-spin" />
             ) : prescriptions.length === 0 ? (
               <div className="db-empty">
-                <p><TranslatedText>No prescriptions yet</TranslatedText></p>
+                <p>No prescriptions yet</p>
               </div>
             ) : (
               prescriptions.slice(0, 3).map(item => (
@@ -309,8 +305,8 @@ export default function Dashboard({ patientName = "Patient", navigateTo, profile
                     <FileText size={15} />
                   </div>
                   <div>
-                    <p className="db-rx-title"><TranslatedText>Dr.</TranslatedText> {item.doctorName}</p>
-                    <p className="db-rx-sub">{item.prescription?.diagnosis || <TranslatedText>Prescription issued</TranslatedText>}</p>
+                    <p className="db-rx-title">Dr. {item.doctorName}</p>
+                    <p className="db-rx-sub">{item.prescription?.diagnosis || "Prescription issued"}</p>
                   </div>
                 </div>
               ))
@@ -326,7 +322,7 @@ function StatCard({ icon, label, value, pct, color }) {
   return (
     <div className="db-stat-card">
       <div className="db-stat-info">
-        <p><TranslatedText>{label}</TranslatedText></p>
+        <p>{label}</p>
         <p>{value}</p>
       </div>
       <div className="db-stat-ring" style={{ "--pct": pct, "--ring-color": color }}>

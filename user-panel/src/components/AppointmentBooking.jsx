@@ -49,10 +49,6 @@ const getUpcomingDates = (availability, count = 14) => {
    MAIN COMPONENT
 ════════════════════════════════════════ */
 export function AppointmentBooking({ navigateTo }) {
-  const { translateToEnglish } = useLanguage();
-  const searchPlaceholder = useTranslatedText("Search doctor or specialization…");
-  const notesPlaceholder = useTranslatedText("Describe your symptoms or reason for visit…");
-
   // Doctor list
   const [doctors,  setDoctors]  = useState([]);
   const [loading,  setLoading]  = useState(true);
@@ -111,21 +107,12 @@ export function AppointmentBooking({ navigateTo }) {
     if (!chosenSlot) return;
     setBooking(true);
     setBookErr("");
-    let notesEn = notes;
-    try {
-      if (notes) notesEn = await translateToEnglish(notes);
-    } catch {
-      setBooking(false);
-      setBookErr("Could not translate your notes. Please try again.");
-      return;
-    }
-
     const r = await bookAppointment({
       doctorId: selected._id,
       date: chosenDate.date,
       timeSlot: chosenSlot.label,
       consultationType: consultType,
-      notes: notesEn,
+      notes,
     });
     setBooking(false);
     if (r?.appointment) {
@@ -171,7 +158,7 @@ export function AppointmentBooking({ navigateTo }) {
           Appointment Booked!
         </h2>
         <p style={{ color:"#64748B", fontSize:14, margin:"0 0 6px" }}>
-          <TranslatedText>Dr.</TranslatedText> {selected?.name}
+          Dr. {selected?.name}
         </p>
         <p style={{ color:"#0d9286", fontSize:13, fontWeight:600, margin:0 }}>
           {chosenDate?.label} • {chosenSlot?.label}
@@ -203,7 +190,7 @@ export function AppointmentBooking({ navigateTo }) {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder={searchPlaceholder}
+            placeholder="Search doctor or specialization…"
             style={{ width:"100%", paddingLeft:36, paddingRight:14, height:40,
               border:"1.5px solid #E2E8F0", borderRadius:10, fontSize:13,
               color:"#0F172A", background:"#F8FAFC", outline:"none",
@@ -222,7 +209,7 @@ export function AppointmentBooking({ navigateTo }) {
                 background: filter === s ? "#0d9286" : "#F1F5F9",
                 color:      filter === s ? "white"   : "#64748B",
               }}>
-              <TranslatedText>{s}</TranslatedText>
+              {s}
             </button>
           ))}
         </div>
@@ -234,7 +221,7 @@ export function AppointmentBooking({ navigateTo }) {
           <div style={{ display:"flex", flexDirection:"column", alignItems:"center",
             justifyContent:"center", paddingTop:80, gap:12 }}>
             <Loader2 size={36} color="#0d9286" style={{ animation:"spin 0.8s linear infinite" }} />
-            <p style={{ color:"#94A3B8", fontSize:14 }}><TranslatedText>Loading verified doctors…</TranslatedText></p>
+            <p style={{ color:"#94A3B8", fontSize:14 }}>Loading verified doctors…</p>
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
           </div>
         ) : list.length === 0 ? (
@@ -243,13 +230,13 @@ export function AppointmentBooking({ navigateTo }) {
               display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
               <User size={28} color="#CBD5E1" />
             </div>
-            <p style={{ color:"#64748B", fontWeight:600, margin:"0 0 6px" }}><TranslatedText>No doctors found</TranslatedText></p>
-            <p style={{ color:"#94A3B8", fontSize:13 }}><TranslatedText>Try a different filter or search</TranslatedText></p>
+            <p style={{ color:"#64748B", fontWeight:600, margin:"0 0 6px" }}>No doctors found</p>
+            <p style={{ color:"#94A3B8", fontSize:13 }}>Try a different filter or search</p>
           </div>
         ) : (
           <>
             <p style={{ fontSize:12, color:"#94A3B8", marginBottom:14, fontWeight:500 }}>
-              {list.length} <TranslatedText>{list.length !== 1 ? "doctors available" : "doctor available"}</TranslatedText>
+              {list.length} doctor{list.length !== 1 ? "s" : ""} available
             </p>
             <div style={{ display:"grid",
               gridTemplateColumns:"repeat(auto-fill, minmax(min(100%,320px),1fr))", gap:14 }}>
@@ -266,7 +253,7 @@ export function AppointmentBooking({ navigateTo }) {
   ════════════════════ */
   if (step === "date") return (
     <div style={{ minHeight:"100vh", background:"#F1F5F9" }}>
-      <StepHeader title={<TranslatedText>Select Date</TranslatedText>} subtitle={`Dr. ${selected.name}`} onBack={back} />
+      <StepHeader title="Select Date" subtitle={`Dr. ${selected.name}`} onBack={back} />
 
       <div style={{ padding:16, maxWidth:600, margin:"0 auto" }}>
         {/* Doctor mini-card */}
@@ -330,7 +317,7 @@ export function AppointmentBooking({ navigateTo }) {
   if (step === "slot") return (
     <div style={{ minHeight:"100vh", background:"#F1F5F9" }}>
       <StepHeader
-        title={<TranslatedText>Select Time</TranslatedText>}
+        title="Select Time"
         subtitle={`${chosenDate?.day}, ${chosenDate?.label}`}
         onBack={back}
       />
@@ -353,7 +340,7 @@ export function AppointmentBooking({ navigateTo }) {
             display:"flex", flexDirection:"column", alignItems:"center", gap:12 }}>
             <Loader2 size={32} color="#0d9286"
               style={{ animation:"spin 0.8s linear infinite" }} />
-            <p style={{ color:"#94A3B8", fontSize:13 }}><TranslatedText>Loading available slots…</TranslatedText></p>
+            <p style={{ color:"#94A3B8", fontSize:13 }}>Loading available slots…</p>
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
           </div>
         ) : slots.length === 0 ? (
@@ -384,7 +371,7 @@ export function AppointmentBooking({ navigateTo }) {
                 <div key={label} style={{ display:"flex", alignItems:"center", gap:6 }}>
                   <div style={{ width:14, height:14, borderRadius:4,
                     background:color, border:`1.5px solid ${border}` }} />
-                  <span style={{ fontSize:11, color:text, fontWeight:500 }}><TranslatedText>{label}</TranslatedText></span>
+                  <span style={{ fontSize:11, color:text, fontWeight:500 }}>{label}</span>
                 </div>
               ))}
             </div>
@@ -418,7 +405,7 @@ export function AppointmentBooking({ navigateTo }) {
                       – {toDisplayTime(s.endTime)}
                     </div>
                     {!s.available && (
-                      <div style={{ fontSize:9, marginTop:4, opacity:0.7 }}><TranslatedText>Booked</TranslatedText></div>
+                      <div style={{ fontSize:9, marginTop:4, opacity:0.7 }}>Booked</div>
                     )}
                   </button>
                 );
@@ -435,7 +422,7 @@ export function AppointmentBooking({ navigateTo }) {
   ════════════════════ */
   if (step === "confirm") return (
     <div style={{ minHeight:"100vh", background:"#F1F5F9" }}>
-      <StepHeader title={<TranslatedText>Confirm Booking</TranslatedText>} subtitle={<TranslatedText>Review your appointment</TranslatedText>} onBack={back} />
+      <StepHeader title="Confirm Booking" subtitle="Review your appointment" onBack={back} />
 
       <div style={{ padding:16, maxWidth:560, margin:"0 auto" }}>
 
@@ -447,9 +434,9 @@ export function AppointmentBooking({ navigateTo }) {
           <div style={{ background:"linear-gradient(135deg,#0d9286,#0b6f66)",
             padding:"24px 20px", color:"white" }}>
             <p style={{ fontSize:11, opacity:0.8, margin:"0 0 4px",
-              textTransform:"uppercase", letterSpacing:"0.08em" }}><TranslatedText>Appointment Summary</TranslatedText></p>
+              textTransform:"uppercase", letterSpacing:"0.08em" }}>Appointment Summary</p>
             <h3 style={{ fontSize:18, fontWeight:800, margin:0 }}>
-              <TranslatedText>Dr.</TranslatedText> {selected.name}
+              Dr. {selected.name}
             </h3>
             <p style={{ fontSize:13, opacity:0.8, margin:"4px 0 0" }}>
               {selected.specialization}
@@ -472,7 +459,7 @@ export function AppointmentBooking({ navigateTo }) {
                     textTransform:"uppercase", letterSpacing:"0.05em", fontWeight:600 }}>
                     {label}
                   </p>
-                  <p style={{ fontSize:14, fontWeight:700, color:"#0F172A", margin:0 }}><TranslatedText>{value}</TranslatedText></p>
+                  <p style={{ fontSize:14, fontWeight:700, color:"#0F172A", margin:0 }}>{value}</p>
                 </div>
               </div>
             ))}
@@ -502,7 +489,7 @@ export function AppointmentBooking({ navigateTo }) {
                   color:         consultType === val ? "#0b6f66" : "#64748B",
                 }}>
                 <span style={{ fontSize:18, display:"block", marginBottom:4 }}>{icon}</span>
-                <TranslatedText>{label}</TranslatedText>
+                {label}
               </button>
             ))}
           </div>
@@ -518,7 +505,7 @@ export function AppointmentBooking({ navigateTo }) {
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            placeholder={notesPlaceholder}
+            placeholder="Describe your symptoms or reason for visit…"
             rows={3}
             style={{ width:"100%", padding:"10px 12px", border:"1.5px solid #E2E8F0",
               borderRadius:10, fontSize:13, color:"#0F172A", resize:"vertical",
@@ -584,7 +571,7 @@ function StepHeader({ title, subtitle, onBack }) {
         <ChevronLeft size={18} color="#64748B" />
       </button>
       <div>
-        <h1 style={{ fontSize:16, fontWeight:800, color:"#0F172A", margin:0 }}><TranslatedText>{title}</TranslatedText></h1>
+        <h1 style={{ fontSize:16, fontWeight:800, color:"#0F172A", margin:0 }}>{title}</h1>
         {subtitle && (
           <p style={{ fontSize:12, color:"#94A3B8", margin:0, marginTop:2 }}>{subtitle}</p>
         )}
@@ -609,7 +596,7 @@ function DoctorMiniCard({ doc }) {
       </div>
       <div style={{ flex:1, minWidth:0 }}>
         <p style={{ fontSize:14, fontWeight:700, color:"#0F172A", margin:"0 0 3px", truncate:true }}>
-          <TranslatedText>Dr.</TranslatedText> {doc.name}
+          Dr. {doc.name}
         </p>
         <p style={{ fontSize:12, color:"#0d9286", fontWeight:600, margin:"0 0 3px" }}>
           {doc.specialization}
@@ -671,7 +658,7 @@ function DoctorCard({ doc, onSelect }) {
           <div style={{ flex:1, minWidth:0 }}>
             <p style={{ fontSize:14, fontWeight:800, color:"#0F172A",
               margin:"0 0 3px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-              <TranslatedText>Dr.</TranslatedText> {doc.name}
+              Dr. {doc.name}
             </p>
             <p style={{ fontSize:12, color:"#0d9286", fontWeight:600, margin:"0 0 6px" }}>
               {doc.specialization}
@@ -689,7 +676,7 @@ function DoctorCard({ doc, onSelect }) {
         {/* Info pills */}
         <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
           {doc.experience && (
-            <InfoRow icon="🎓" text={`${doc.experience} years experience`} translate />
+            <InfoRow icon="🎓" text={`${doc.experience} years experience`} />
           )}
           {doc.qualification && (
             <InfoRow icon="📋" text={doc.qualification} />
@@ -711,7 +698,7 @@ function DoctorCard({ doc, onSelect }) {
           {breakInfo && (
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               <Coffee size={13} color="#92400E" />
-              <span style={{ fontSize:11, color:"#92400E", fontWeight:500 }}><TranslatedText>{breakInfo}</TranslatedText></span>
+              <span style={{ fontSize:11, color:"#92400E", fontWeight:500 }}>{breakInfo}</span>
             </div>
           )}
         </div>
@@ -740,13 +727,13 @@ function DoctorCard({ doc, onSelect }) {
   );
 }
 
-function InfoRow({ icon, text, translate = false }) {
+function InfoRow({ icon, text }) {
   return (
     <div style={{ display:"flex", alignItems:"center", gap:7 }}>
       <span style={{ fontSize:12 }}>{icon}</span>
       <span style={{ fontSize:12, color:"#64748B",
         overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-        {translate ? <TranslatedText>{text}</TranslatedText> : text}
+        {text}
       </span>
     </div>
   );

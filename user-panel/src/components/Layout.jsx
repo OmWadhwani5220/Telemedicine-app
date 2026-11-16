@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import TranslatedText from "./TranslatedText";
-import { useTranslatedText, useLanguage } from "../context/LanguageContext";
 import {
   Home, Activity, Calendar, Video,
   FileText, FileCheck,
   Settings, LogOut, Heart, ChevronRight,
-  Bell, Search, AlertCircle, User, Languages, ChevronDown,
+  Bell, Search, AlertCircle, User,
 } from "lucide-react";
 
 // Brand colors matching #0d9286
@@ -25,12 +23,6 @@ const NAV_ITEMS = [
 
 const PROTECTED = ["appointments","symptoms","video","records","prescriptions"];
 
-const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "hi", label: "Hindi" },
-  { code: "pa", label: "Punjabi" },
-];
-
 export default function Layout({
   children,
   currentScreen,
@@ -41,15 +33,6 @@ export default function Layout({
   profileChecked,
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [languageOpen, setLanguageOpen] = useState(false);
-  const { language, changeLanguage } = useLanguage();
-
-  const lockedTitle = useTranslatedText("Complete your profile to unlock");
-  const searchPlaceholder = useTranslatedText("Search…");
-  const collapseTitle = useTranslatedText("Collapse");
-  const expandTitle = useTranslatedText("Expand");
-  const logoutTitle = useTranslatedText("Logout");
-  const languageTitle = useTranslatedText("Language");
 
   const safeName  = patientName || "Patient";
   const initials  = safeName.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase() || "P";
@@ -93,7 +76,7 @@ export default function Layout({
         <div style={{ display:"flex", justifyContent:"flex-end", padding:"16px 14px 8px", flexShrink:0 }}>
           <button
             onClick={() => setExpanded(v => !v)}
-            title={expanded ? collapseTitle : expandTitle}
+            title={expanded ? "Collapse" : "Expand"}
             style={{
               background:"transparent", border:"none", cursor:"pointer",
               color: B,
@@ -115,7 +98,7 @@ export default function Layout({
               </div>
               <div>
                 <p style={{ color:"white", fontSize:15, fontWeight:800, letterSpacing:"-0.3px", margin:0, lineHeight:1.2 }}>Telemed</p>
-                <p style={{ color:"rgba(255,255,255,0.3)", fontSize:10, margin:0 }}><TranslatedText>Patient Portal</TranslatedText></p>
+                <p style={{ color:"rgba(255,255,255,0.3)", fontSize:10, margin:0 }}>Patient Portal</p>
               </div>
             </div>
           </div>
@@ -138,8 +121,8 @@ export default function Layout({
           >
             <AlertCircle size={13} color="#F59E0B" style={{ flexShrink:0, marginTop:1 }} />
             <div>
-              <p style={{ color:"#FCD34D", fontSize:11, fontWeight:600, margin:0 }}><TranslatedText>Profile Incomplete</TranslatedText></p>
-              <p style={{ color:"rgba(252,211,77,0.6)", fontSize:10, margin:0, marginTop:1 }}><TranslatedText>Tap to complete profile</TranslatedText></p>
+              <p style={{ color:"#FCD34D", fontSize:11, fontWeight:600, margin:0 }}>Profile Incomplete</p>
+              <p style={{ color:"rgba(252,211,77,0.6)", fontSize:10, margin:0, marginTop:1 }}>Tap to complete profile</p>
             </div>
           </div>
         )}
@@ -153,7 +136,7 @@ export default function Layout({
               <button
                 key={id}
                 onClick={() => handleNavigate(id)}
-                title={!expanded ? (locked ? `${label} (${lockedTitle})` : label) : undefined}
+                title={!expanded ? (locked ? `${label} (complete profile to unlock)` : label) : undefined}
                 style={{
                   display:"flex",
                   alignItems:"center",
@@ -200,7 +183,7 @@ export default function Layout({
                 }}>
                   <Icon size={17} />
                 </div>
-                {expanded && <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis" }}><TranslatedText>{label}</TranslatedText></span>}
+                {expanded && <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis" }}>{label}</span>}
                 {expanded && locked && <span style={{ fontSize:10, opacity:0.4 }}>🔒</span>}
               </button>
             );
@@ -209,81 +192,10 @@ export default function Layout({
 
         {/* BOTTOM */}
         <div style={{ padding:"10px 8px 14px", borderTop:"1px solid rgba(255,255,255,0.06)", flexShrink:0 }}>
-          {/* Language selector */}
-          <div style={{ position:"relative", marginBottom:8 }}>
-            <button
-              type="button"
-              onClick={() => setLanguageOpen(v => !v)}
-              title={!expanded ? languageTitle : undefined}
-              style={{
-                display:"flex", alignItems:"center",
-                gap: expanded ? 12 : 0,
-                justifyContent: expanded ? "flex-start" : "center",
-                width:"100%", padding: expanded ? "9px 12px" : "9px",
-                borderRadius:12, border:"none", cursor:"pointer",
-                background: languageOpen ? "rgba(255,255,255,0.08)" : "transparent",
-                color:"rgba(255,255,255,0.55)",
-                fontSize:13, fontFamily:"inherit", transition:"all 0.15s",
-              }}
-            >
-              <div style={{ width:34, height:34, borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(255,255,255,0.04)", flexShrink:0 }}>
-                <Languages size={17} />
-              </div>
-              {expanded && (
-                <>
-                  <span style={{ flex:1, textAlign:"left" }}><TranslatedText>Language</TranslatedText></span>
-                  <ChevronDown size={15} style={{ transform:languageOpen ? "rotate(180deg)" : "rotate(0deg)", transition:"transform 0.2s" }} />
-                </>
-              )}
-            </button>
-
-            {languageOpen && (
-              <div style={{
-                position:"fixed",
-                left: expanded ? 12 : 72,
-                bottom: 82,
-                width:180,
-                padding:6,
-                background:"#fff",
-                border:"1px solid #e2e8f0",
-                borderRadius:12,
-                boxShadow:"0 10px 30px rgba(0,0,0,0.22)",
-                zIndex:1000,
-              }}>
-                {LANGUAGES.map(item => {
-                  const selected = language === item.code;
-                  return (
-                    <button
-                      type="button"
-                      key={item.code}
-                      onClick={() => {
-                        changeLanguage(item.code);
-                        setLanguageOpen(false);
-                      }}
-                      style={{
-                        width:"100%", display:"flex", alignItems:"center",
-                        justifyContent:"space-between", padding:"9px 10px",
-                        border:"none", borderRadius:9,
-                        background:selected ? B_LIGHT : "transparent",
-                        color:selected ? B : "#334155",
-                        cursor:"pointer", fontSize:12.5,
-                        fontWeight:selected ? 600 : 400,
-                        fontFamily:"inherit", textAlign:"left",
-                      }}
-                    >
-                      <span>{item.label}</span>
-                      {selected && <span style={{ color:B, fontWeight:700 }}>✓</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
           {/* Logout */}
           <button
             onClick={handleLogout}
-            title={!expanded ? logoutTitle : undefined}
+            title={!expanded ? "Logout" : undefined}
             style={{
               display:"flex", alignItems:"center",
               gap: expanded ? 12 : 0,
@@ -300,7 +212,7 @@ export default function Layout({
             <div style={{ width:34, height:34, borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(255,255,255,0.04)", flexShrink:0 }}>
               <LogOut size={16} />
             </div>
-            {expanded && <TranslatedText>Logout</TranslatedText>}
+            {expanded && "Logout"}
           </button>
 
           {/* Avatar chip */}
@@ -318,7 +230,7 @@ export default function Layout({
             {expanded && (
               <div style={{ overflow:"hidden" }}>
                 <p style={{ margin:0, fontSize:12.5, fontWeight:600, color:"#fff", lineHeight:1.3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{safeName}</p>
-                <p style={{ margin:0, fontSize:10, color:"rgba(255,255,255,0.55)" }}><TranslatedText>Patient</TranslatedText></p>
+                <p style={{ margin:0, fontSize:10, color:"rgba(255,255,255,0.55)" }}>Patient</p>
               </div>
             )}
           </div>
@@ -353,7 +265,7 @@ export default function Layout({
             <div style={{ position:"relative" }}>
               <Search size={13} color="#94a3b8" style={{ position:"absolute", left:11, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }} />
               <input
-                placeholder={searchPlaceholder}
+                placeholder="Search…"
                 style={{ paddingLeft:30, paddingRight:12, height:36, width:180, border:"1.5px solid #e2e8f0", borderRadius:10, fontSize:13, color:"#0f172a", background:"#f8fafc", outline:"none", fontFamily:"inherit", transition:"border-color 0.2s" }}
                 onFocus={e => { e.target.style.borderColor=B; e.target.style.background="#fff"; }}
                 onBlur={e  => { e.target.style.borderColor="#e2e8f0"; e.target.style.background="#f8fafc"; }}
@@ -364,7 +276,7 @@ export default function Layout({
             {profileChecked && !profileComplete && (
               <button
                 onClick={() => handleNavigate("settings")}
-                title={lockedTitle}
+                title="Complete your profile"
                 style={{ width:36, height:36, borderRadius:9, border:"1.5px solid rgba(245,158,11,0.4)", background:"rgba(245,158,11,0.07)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
               >
                 <AlertCircle size={15} color="#f59e0b" />
@@ -384,7 +296,7 @@ export default function Layout({
               </div>
               <div style={{ display:"flex", flexDirection:"column" }}>
                 <span style={{ fontSize:12, fontWeight:600, color:"#0f172a", lineHeight:1.2 }}>{firstName}</span>
-                <span style={{ fontSize:10, color:"#94a3b8" }}><TranslatedText>Patient</TranslatedText></span>
+                <span style={{ fontSize:10, color:"#94a3b8" }}>Patient</span>
               </div>
             </div>
           </div>
