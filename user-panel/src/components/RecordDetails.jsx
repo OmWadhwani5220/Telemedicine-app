@@ -1,8 +1,10 @@
+
 import React from "react";
 import {
   FileText, Calendar, User, Stethoscope, Pill,
   Lock, Bell, ArrowLeft, Download, Share2, CheckCircle,
 } from "lucide-react";
+import TranslatedText from "./TranslatedText";
 
 export function RecordDetails({ record, navigateTo }) {
   if (!record) {
@@ -10,10 +12,12 @@ export function RecordDetails({ record, navigateTo }) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="text-center">
           <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">No record selected.</p>
+          <p className="text-gray-500">
+            <TranslatedText>No record selected.</TranslatedText>
+          </p>
           <button onClick={() => navigateTo("records")}
             className="mt-4 px-5 py-2.5 bg-emerald-500 text-white rounded-xl text-sm hover:bg-emerald-600">
-            Back to Records
+            <TranslatedText>Back to Records</TranslatedText>
           </button>
         </div>
       </div>
@@ -31,8 +35,12 @@ export function RecordDetails({ record, navigateTo }) {
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </button>
             <div>
-              <h1 className="text-gray-800 font-bold text-lg">Record Details</h1>
-              <p className="text-gray-400 text-xs hidden sm:block">Consultation #{record.id}</p>
+              <h1 className="text-gray-800 font-bold text-lg">
+                <TranslatedText>Record Details</TranslatedText>
+              </h1>
+              <p className="text-gray-400 text-xs hidden sm:block">
+                <TranslatedText>Consultation</TranslatedText> #{record.id}
+              </p>
             </div>
           </div>
           <button className="relative p-2 hover:bg-gray-100 rounded-xl">
@@ -52,12 +60,17 @@ export function RecordDetails({ record, navigateTo }) {
               <Lock className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <p className="text-gray-800 font-semibold text-sm">Encrypted Record</p>
-              <p className="text-gray-400 text-xs">Securely stored and verified</p>
+              <p className="text-gray-800 font-semibold text-sm">
+                <TranslatedText>Encrypted Record</TranslatedText>
+              </p>
+              <p className="text-gray-400 text-xs">
+                <TranslatedText>Securely stored and verified</TranslatedText>
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 bg-green-100 text-green-700 px-3 py-1.5 rounded-xl text-xs font-semibold">
-            <CheckCircle className="w-3.5 h-3.5" /> Verified
+            <CheckCircle className="w-3.5 h-3.5" />
+            <TranslatedText>Verified</TranslatedText>
           </div>
         </div>
 
@@ -67,22 +80,28 @@ export function RecordDetails({ record, navigateTo }) {
             <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
               <FileText className="w-4 h-4 text-purple-600" />
             </div>
-            <h2 className="text-gray-800 font-semibold text-sm">Consultation Information</h2>
+            <h2 className="text-gray-800 font-semibold text-sm">
+              <TranslatedText>Consultation Information</TranslatedText>
+            </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-5">
             {[
-              { icon: Calendar, label: "Date",              value: record.date,   color: "text-blue-600",   bg: "bg-blue-50"   },
-              { icon: User,     label: "Doctor",            value: record.doctor, color: "text-purple-600", bg: "bg-purple-50" },
-              { icon: FileText, label: "Consultation Type", value: record.type,   color: "text-orange-600", bg: "bg-orange-50", full: true },
+              { icon: Calendar, label: "Date", value: record.date, color: "text-blue-600", bg: "bg-blue-50" },
+              { icon: User, label: "Doctor", value: record.doctor, color: "text-purple-600", bg: "bg-purple-50" },
+              { icon: FileText, label: "Consultation Type", value: record.type, color: "text-orange-600", bg: "bg-orange-50", full: true },
             ].map(({ icon: Icon, label, value, color, bg, full }) => (
               <div key={label} className={`p-4 bg-gray-50 rounded-xl ${full ? "sm:col-span-2" : ""}`}>
                 <div className={`flex items-center gap-2 mb-2`}>
                   <div className={`w-6 h-6 ${bg} rounded-md flex items-center justify-center`}>
                     <Icon className={`w-3.5 h-3.5 ${color}`} />
                   </div>
-                  <p className="text-gray-400 text-xs font-medium">{label}</p>
+                  <p className="text-gray-400 text-xs font-medium">
+                    <TranslatedText>{label}</TranslatedText>
+                  </p>
                 </div>
-                <p className="text-gray-800 font-semibold text-sm">{value}</p>
+                <p className="text-gray-800 font-semibold text-sm">
+                  <TranslatedText>{value}</TranslatedText>
+                </p>
               </div>
             ))}
           </div>
@@ -94,11 +113,15 @@ export function RecordDetails({ record, navigateTo }) {
             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
               <Stethoscope className="w-4 h-4 text-blue-600" />
             </div>
-            <h2 className="text-gray-800 font-semibold text-sm">Diagnosis</h2>
+            <h2 className="text-gray-800 font-semibold text-sm">
+              <TranslatedText>Diagnosis</TranslatedText>
+            </h2>
           </div>
           <div className="p-5">
             <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-              <p className="text-gray-700 text-sm leading-relaxed">{record.diagnosis}</p>
+              <p className="text-gray-700 text-sm leading-relaxed">
+                <TranslatedText>{record.diagnosis}</TranslatedText>
+              </p>
             </div>
           </div>
         </div>
@@ -109,11 +132,15 @@ export function RecordDetails({ record, navigateTo }) {
             <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
               <Pill className="w-4 h-4 text-green-600" />
             </div>
-            <h2 className="text-gray-800 font-semibold text-sm">Prescription & Recommendations</h2>
+            <h2 className="text-gray-800 font-semibold text-sm">
+              <TranslatedText>Prescription & Recommendations</TranslatedText>
+            </h2>
           </div>
           <div className="p-5">
             <div className="p-4 bg-green-50 border border-green-100 rounded-xl">
-              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">{record.prescription}</p>
+              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                <TranslatedText>{record.prescription}</TranslatedText>
+              </p>
             </div>
           </div>
         </div>
@@ -123,12 +150,14 @@ export function RecordDetails({ record, navigateTo }) {
           <button className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r
             from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-semibold
             hover:from-emerald-600 hover:to-teal-600 transition-all shadow-sm">
-            <Download className="w-4 h-4" /> Download PDF
+            <Download className="w-4 h-4" />
+            <TranslatedText>Download PDF</TranslatedText>
           </button>
           <button className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border-2
             border-gray-200 text-gray-700 rounded-xl text-sm font-semibold
             hover:bg-gray-50 transition-colors">
-            <Share2 className="w-4 h-4" /> Share
+            <Share2 className="w-4 h-4" />
+            <TranslatedText>Share</TranslatedText>
           </button>
         </div>
       </main>
