@@ -10,28 +10,47 @@ filtered through the clinical plausibility layer.
 """
 import os
 import joblib
-from huggingface_hub import hf_hub_download
 import numpy as np
+from functools import lru_cache
+from huggingface_hub import hf_hub_download
 
-from app.config import MODEL_PATH, LABEL_ENCODER_PATH, SYMPTOM_COLUMNS_PATH
 from app.models.preprocessing import encode_symptoms
 from app.utils.helpers import get_disease_description
 from app.services.risk_rules import apply_all_rules
 
-# ── Load artifacts once at startup ─────────────────────────────────────────
 HF_MODEL_REPO = os.environ["HF_MODEL_REPO"]
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-MODEL_PATH = hf_hub_download(
-    repo_id=HF_MODEL_REPO,
-    filename="model.pkl",
-    token=HF_TOKEN
-)
 
-model = joblib.load(MODEL_PATH)
+@lru_cache(maxsize=1)
+def load_artifacts():
+    model_path = hf_hub_download(
+        repo_id=HF_MODEL_REPO,
+        filename="model.pkl",
+        token=HF_TOKEN
+    )
+
+    encoder_path = hf_hub_download(
+        repo_id=HF_MODEL_REPO,
+        filename="label_encoder.pkl",
+        token=HF_TOKEN
+    )
+
+    columns_path = hf_hub_download(
+        repo_id=HF_MODEL_REPO,
+        filename="symptom_columns.pkl",
+        token=HF_TOKEN
+    )
+
+    model = joblib.load(model_path)
+    label_encoder = joblib.load(encoder_path)
+    symptom_columns = joblib.load(columns_path)
+
+    return model, label_encoder, symptom_columns
 
 
 def predict(
+    model, label_encoder, symptom_columns = load_artifacts()
     symptoms: list[str],
     patient_profile: dict = None,
     top_n: int = 3,
