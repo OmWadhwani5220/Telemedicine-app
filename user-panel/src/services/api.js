@@ -155,8 +155,7 @@ export const getAvailableSlots = async (doctorId, date) => {
    Calls the FastAPI ai-service directly on port 8001.
    No auth header needed — it's an internal service.
 ───────────────────────────────────────── */
-const AI_SERVICE_URL = "https://telemed-user-panel.vercel.app";
-
+const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL;
 export const checkSymptoms = async (payload) => {
   try {
     const res = await fetch(`${AI_SERVICE_URL}/predict`, {
