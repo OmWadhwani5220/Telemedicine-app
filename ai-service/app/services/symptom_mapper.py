@@ -13,8 +13,12 @@ import joblib
 from app.config import SYMPTOM_COLUMNS_PATH
 
 # Load once at startup
-_symptom_columns: list[str] = joblib.load(SYMPTOM_COLUMNS_PATH)
-_symptom_set = set(_symptom_columns)
+from app.models.predict import load_artifacts
+
+def get_all_valid_symptoms() -> list[str]:
+    _, _, symptom_columns = load_artifacts()
+    return list(symptom_columns)
+    _symptom_set = set(_symptom_columns)
 
 
 def validate_and_map(raw_symptoms: list[str]) -> list[str]:

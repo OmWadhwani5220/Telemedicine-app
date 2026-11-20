@@ -18,7 +18,36 @@ from app.utils.helpers import get_disease_description
 from app.services.risk_rules import apply_all_rules
 
 # ── Load artifacts once at startup ─────────────────────────────────────────
-model           = joblib.load(MODEL_PATH)
+import os
+import joblib
+from functools import lru_cache
+from huggingface_hub import hf_hub_download
+
+@lru_cache(maxsize=1)
+def load_artifacts():
+    repo = os.environ["HF_MODEL_REPO"]
+    token = os.getenv("HF_TOKEN")
+
+    filenames = [
+        "model.pkl",
+        "label_encoder.pkl",
+        "symptom_columns.pkl",
+    ]
+
+    paths = {}
+
+    for filename in filenames:
+        paths[filename] = hf_hub_download(
+            repo_id=repo,
+            filename=filename,
+            token=token,
+        )
+
+    model = joblib.load(paths["model.pkl"])
+    label_encoder = joblib.load(paths["label_encoder.pkl"])
+    symptom_columns = joblib.load(paths["symptom_columns.pkl"])
+
+    return model, label_encoder, symptom_columns
 label_encoder   = joblib.load(LABEL_ENCODER_PATH)
 symptom_columns = joblib.load(SYMPTOM_COLUMNS_PATH)
 
@@ -28,6 +57,8 @@ def predict(
     patient_profile: dict = None,
     top_n: int = 3,
 ) -> dict:
+    model, label_encoder, symptom_columns = load_artifacts()
+
     """
     Run a prediction given a list of validated symptom names.
 

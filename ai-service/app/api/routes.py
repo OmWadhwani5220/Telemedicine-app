@@ -14,7 +14,7 @@ from fastapi import APIRouter, HTTPException
 from app.api.schemas import PredictRequest, PredictResponse, HealthResponse
 from app.services.llm_service import extract_symptoms_from_text
 from app.services.symptom_mapper import validate_and_map, get_all_valid_symptoms
-from app.models.predict import predict, label_encoder, symptom_columns
+from app.models.predict import predict, load_artifacts
 
 router = APIRouter()
 
