@@ -12,23 +12,30 @@ from app.api.routes import router
 app = FastAPI(
     title="TeleMed AI Symptom Predictor",
     description="AI-powered symptom analysis service",
-    version="1.0.0",
+    version="1.0.1",
 )
 
 
 ALLOWED_ORIGINS = [
+    # Vercel Frontends
     "https://telemed-user-panel.vercel.app",
     "https://telemedicine-app-six-beryl.vercel.app",
     "https://telemed-doctor-panel.vercel.app",
     "https://telemed-admin-panel.vercel.app",
+
+    # Render Services
     "https://telemedicine-app-mr3o.onrender.com",
     "https://telemed-video-server.onrender.com",
+
+    # Local Development
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",
+    "http://127.0.0.1:5173",
 ]
 
 
-# Apply CORS as the outermost ASGI middleware.
-# This also adds CORS headers to error responses
-# generated inside the application.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -46,4 +53,16 @@ def root():
     return {
         "service": "TeleMed AI Service",
         "status": "running",
+        "version": "1.0.1",
+    }
+
+
+@app.get("/cors-check")
+def cors_check():
+    return {
+        "version": "1.0.1",
+        "user_panel_allowed": (
+            "https://telemed-user-panel.vercel.app"
+            in ALLOWED_ORIGINS
+        ),
     }
