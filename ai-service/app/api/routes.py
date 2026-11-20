@@ -68,15 +68,11 @@ async def predict_disease(request: PredictRequest):
         "recent_travel":          request.recent_travel,
     }
 
-    try:
-        result = predict(
-            symptoms=validated_symptoms,
-            patient_profile=patient_profile,
-            top_n=request.top_n,
-        )
-    except Exception as e:
-        import traceback; traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {type(e).__name__}: {e}")
+    result = predict(
+        symptoms=validated_symptoms,
+        patient_profile=patient_profile,
+        top_n=request.top_n,
+    )
 
     # ── Step 6: Return response ────────────────────────────────────────────
     return PredictResponse(
@@ -91,7 +87,7 @@ async def predict_disease(request: PredictRequest):
 # ── GET /health ─────────────────────────────────────────────────────────────
 @router.get("/health", response_model=HealthResponse)
 def health():
-    model, label_encoder, symptom_columns = load_artifacts()
+    """Service health check — confirms model is loaded."""
     return HealthResponse(
         status="ok",
         model_loaded=True,
