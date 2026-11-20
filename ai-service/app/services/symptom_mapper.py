@@ -1,58 +1,56 @@
+
 """
 symptom_mapper.py
-─────────────────
+
 Bridges between the LLM layer and the ML model.
 
-The LLM returns symptom names. This module:
-1. Validates them against the model's vocabulary
-2. Handles edge cases (partial matches, near-duplicates)
-3. Returns the final clean list ready for encoding
+1. Loads the trained model's symptom vocabulary.
+2. Validates symptoms extracted by the LLM.
+3. Removes duplicates and invalid symptoms.
+4. Returns symptoms ready for ML prediction.
 """
 
-import joblib
-from app.config import SYMPTOM_COLUMNS_PATH
-
-# Load once at startup
 from app.models.predict import load_artifacts
 
+
 def get_all_valid_symptoms() -> list[str]:
+    """Return all symptom names supported by the trained ML model."""
     _, _, symptom_columns = load_artifacts()
     return list(symptom_columns)
-    _symptom_set = set(_symptom_columns)
 
 
 def validate_and_map(raw_symptoms: list[str]) -> list[str]:
     """
-    Take a raw list of symptom strings (from LLM or direct input),
-    clean them, and return only those that exist in the model vocabulary.
-
-    Args:
-        raw_symptoms: list of symptom strings
-
-    Returns:
-        Filtered list of valid symptom strings
+    Validate and normalize symptoms against the model vocabulary.
     """
+
+    symptom_columns = get_all_valid_symptoms()
+
+    # Map normalized names back to the model's original column names.
+    symptom_lookup = {
+        str(symptom).strip().lower(): str(symptom)
+        for symptom in symptom_columns
+    }
+
     valid = []
-    seen  = set()
+    seen = set()
 
     for symptom in raw_symptoms:
-        # Normalise: lowercase, strip whitespace
+        if not isinstance(symptom, str):
+            continue
+
         cleaned = symptom.strip().lower()
 
-        # Skip duplicates
-        if cleaned in seen:
+        if not cleaned or cleaned in seen:
             continue
+
         seen.add(cleaned)
 
-        # Keep only symptoms in the trained model's vocabulary
-        if cleaned in _symptom_set:
-            valid.append(cleaned)
+        if cleaned in symptom_lookup:
+            valid.append(symptom_lookup[cleaned])
         else:
-            print(f"⚠️  Symptom not in vocabulary, skipping: '{cleaned}'")
+            print(
+                f"Symptom not in vocabulary, skipping: '{cleaned}'"
+            )
 
     return valid
-
-
-def get_all_valid_symptoms() -> list[str]:
-    """Return the full list of symptoms the model understands."""
-    return _symptom_columns
