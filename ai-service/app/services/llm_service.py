@@ -180,7 +180,7 @@ def extract_symptoms_from_text(user_text: str) -> list[str]:
         client = Groq(api_key=GROQ_API_KEY)
 
         chat_completion = client.chat.completions.create(
-            model="groq/compound-mini",
+            model="openai/gpt-oss-120b",
             temperature=0.0,
             max_tokens=512,
             messages=[
