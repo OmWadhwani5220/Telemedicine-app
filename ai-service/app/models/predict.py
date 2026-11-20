@@ -8,45 +8,19 @@ builds the feature vector, runs the ensemble model,
 and returns top-N predictions with confidence scores,
 filtered through the clinical plausibility layer.
 """
-import os
+
 import joblib
 import numpy as np
-from functools import lru_cache
-from huggingface_hub import hf_hub_download
 
+from app.config import MODEL_PATH, LABEL_ENCODER_PATH, SYMPTOM_COLUMNS_PATH
 from app.models.preprocessing import encode_symptoms
 from app.utils.helpers import get_disease_description
 from app.services.risk_rules import apply_all_rules
 
-HF_MODEL_REPO = os.environ["HF_MODEL_REPO"]
-HF_TOKEN = os.getenv("HF_TOKEN")
-
-
-@lru_cache(maxsize=1)
-def load_artifacts():
-    model_path = hf_hub_download(
-        repo_id=HF_MODEL_REPO,
-        filename="model.pkl",
-        token=HF_TOKEN
-    )
-
-    encoder_path = hf_hub_download(
-        repo_id=HF_MODEL_REPO,
-        filename="label_encoder.pkl",
-        token=HF_TOKEN
-    )
-
-    columns_path = hf_hub_download(
-        repo_id=HF_MODEL_REPO,
-        filename="symptom_columns.pkl",
-        token=HF_TOKEN
-    )
-
-    model = joblib.load(model_path)
-    label_encoder = joblib.load(encoder_path)
-    symptom_columns = joblib.load(columns_path)
-
-    return model, label_encoder, symptom_columns
+# ── Load artifacts once at startup ─────────────────────────────────────────
+model           = joblib.load(MODEL_PATH)
+label_encoder   = joblib.load(LABEL_ENCODER_PATH)
+symptom_columns = joblib.load(SYMPTOM_COLUMNS_PATH)
 
 
 def predict(
@@ -55,17 +29,25 @@ def predict(
     top_n: int = 3,
 ) -> dict:
     """
-    Run disease prediction using the trained ML model.
+    Run a prediction given a list of validated symptom names.
+
+    Args:
+        symptoms:        List of symptom strings (already validated against vocabulary)
+        patient_profile: Dict of patient fields (age, gender, bmi, etc.)
+        top_n:           Number of top predictions to return
+
+    Returns:
+        Dict with:
+          predictions      — ranked list of clinically filtered disease predictions
+          symptoms_matched — the symptoms that fed the model
+          red_flags        — any red-flag symptoms detected
+          filter_notes     — what was removed and why (for transparency)
     """
-
-    model, label_encoder, symptom_columns = load_artifacts()
-
     if patient_profile is None:
         patient_profile = {}
 
-    # Build feature vector
+    # ── Build feature vector ───────────────────────────────────────────────
     encoded = np.array([encode_symptoms(symptoms, symptom_columns)])
-
 
     # ── Run model — fetch more than top_n so filtering has room to work ────
     fetch_n     = min(top_n * 3, len(label_encoder.classes_))

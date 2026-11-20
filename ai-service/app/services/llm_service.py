@@ -166,96 +166,58 @@ Example output: ["nausea", "vomiting", "abdominal pain"]
 """
 
 
-
 def extract_symptoms_from_text(user_text: str) -> list[str]:
     """
-    Extract symptoms from multilingual text using Groq.
-    Returns only symptoms present in VALID_SYMPTOMS.
+    Send user's free-text symptom description to Groq (llama-3.1-8b-instant).
+    Returns a list of valid symptom name strings.
+    If Groq is unavailable or the key is missing, returns [].
     """
-
     if not GROQ_API_KEY or GROQ_API_KEY == "your_groq_api_key_here":
-        print("GROQ_API_KEY not configured")
-        return []
-
-    if not user_text or not user_text.strip():
+        print("⚠️  GROQ_API_KEY not set — skipping LLM extraction")
         return []
 
     try:
         client = Groq(api_key=GROQ_API_KEY)
 
-        response = client.chat.completions.create(
-            model="openai/gpt-oss-20b",
-            temperature=0,
-            max_completion_tokens=1024,
+        chat_completion = client.chat.completions.create(
+            model="groq/compound-mini",
+            temperature=0.0,
+            max_tokens=512,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_text},
             ],
         )
 
-        message = response.choices[0].message
-        raw_text = (message.content or "").strip()
+        raw_text = chat_completion.choices[0].message.content.strip()
 
-        if not raw_text:
-            print("Groq returned empty response content")
-            return []
-
-        # Remove thinking tags, if present
+        # Qwen thinks out loud — strip the <think>...</think> block if present
         if "<think>" in raw_text:
             if "</think>" in raw_text:
-                raw_text = raw_text.split("</think>", 1)[-1].strip()
+                raw_text = raw_text.split("</think>")[-1].strip()
             else:
+        # thinking didn't close — return empty, let the route handle it
                 return []
 
-        # Remove Markdown code fences
+        # Strip markdown code fences if model wraps response in them
         if raw_text.startswith("```"):
-            lines = raw_text.splitlines()
+            raw_text = raw_text.split("```")[1]
+            if raw_text.startswith("json"):
+                raw_text = raw_text[4:]
+            raw_text = raw_text.strip()
 
-            if lines and lines[0].startswith("```"):
-                lines = lines[1:]
-
-            if lines and lines[-1].strip() == "```":
-                lines = lines[:-1]
-
-            raw_text = "\n".join(lines).strip()
-
-        # Parse JSON
         symptoms = json.loads(raw_text)
 
-        # Accept either JSON array or {"symptoms": [...]}
-        if isinstance(symptoms, dict):
-            symptoms = symptoms.get("symptoms", [])
+        # Validate — only keep items that are in our vocabulary
+        valid_set = set(VALID_SYMPTOMS)
+        validated = [s for s in symptoms if s in valid_set]
 
-        if not isinstance(symptoms, list):
-            print("Unexpected Groq response format")
-            return []
-
-        # Normalize and validate against vocabulary
-        valid_lookup = {
-            str(symptom).strip().lower(): symptom
-            for symptom in VALID_SYMPTOMS
-        }
-
-        validated = []
-        seen = set()
-
-        for symptom in symptoms:
-            if not isinstance(symptom, str):
-                continue
-
-            key = symptom.strip().lower()
-
-            if key in valid_lookup and key not in seen:
-                validated.append(valid_lookup[key])
-                seen.add(key)
-
-        print(f"LLM extracted {len(validated)} valid symptoms")
+        print(f"🧠 LLM extracted: {validated}")
         return validated
 
     except json.JSONDecodeError as e:
-        print(f"Groq JSON parsing error: {e}")
+        print(f"❌ Groq response parse error: {e}")
         return []
-
     except Exception as e:
-        print(f"Groq extraction error: {type(e).__name__}")
+        print(f"❌ Groq unexpected error: {e}")
         return []
