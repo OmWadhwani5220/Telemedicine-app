@@ -166,58 +166,47 @@ Example output: ["nausea", "vomiting", "abdominal pain"]
 """
 
 
+import re
+
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
+def _keyword_fallback(text: str) -> list[str]:
+    """Plain-English substring match, used when the LLM fails or returns nothing."""
+    t = text.lower()
+    found = [s for s in VALID_SYMPTOMS if s in t]
+    return [s for s in found if not any(s != o and s in o for o in found)]
+
+
 def extract_symptoms_from_text(user_text: str) -> list[str]:
-    """
-    Send user's free-text symptom description to Groq (llama-3.1-8b-instant).
-    Returns a list of valid symptom name strings.
-    If Groq is unavailable or the key is missing, returns [].
-    """
-    if not GROQ_API_KEY or GROQ_API_KEY == "your_groq_api_key_here":
-        print("⚠️  GROQ_API_KEY not set — skipping LLM extraction")
-        return []
+    api_key = os.getenv("GROQ_API_KEY", "")
+    validated: list[str] = []
 
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
+    if not api_key:
+        print("⚠️ GROQ_API_KEY not set — using keyword fallback")
+    else:
+        try:
+            client = Groq(api_key=api_key)
+            resp = client.chat.completions.create(
+                model=GROQ_MODEL,
+                temperature=0.0,
+                max_tokens=512,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_text},
+                ],
+            )
+            raw = resp.choices[0].message.content or ""
+            print(f"🧠 Groq raw: {raw!r}")
+            raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.S)
+            m = re.search(r"\[.*?\]", raw, flags=re.S)   # first JSON array
+            if m:
+                valid_set = set(VALID_SYMPTOMS)
+                validated = [s for s in json.loads(m.group(0)) if s in valid_set]
+        except Exception as e:
+            print(f"❌ Groq error: {type(e).__name__}: {e}")
 
-        chat_completion = client.chat.completions.create(
-            model="groq/compound-mini",
-            temperature=0.0,
-            max_tokens=512,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_text},
-            ],
-        )
+    if not validated:
+        validated = _keyword_fallback(user_text)
+        print(f"🔎 Fallback matched: {validated}")
 
-        raw_text = chat_completion.choices[0].message.content.strip()
-
-        # Qwen thinks out loud — strip the <think>...</think> block if present
-        if "<think>" in raw_text:
-            if "</think>" in raw_text:
-                raw_text = raw_text.split("</think>")[-1].strip()
-            else:
-        # thinking didn't close — return empty, let the route handle it
-                return []
-
-        # Strip markdown code fences if model wraps response in them
-        if raw_text.startswith("```"):
-            raw_text = raw_text.split("```")[1]
-            if raw_text.startswith("json"):
-                raw_text = raw_text[4:]
-            raw_text = raw_text.strip()
-
-        symptoms = json.loads(raw_text)
-
-        # Validate — only keep items that are in our vocabulary
-        valid_set = set(VALID_SYMPTOMS)
-        validated = [s for s in symptoms if s in valid_set]
-
-        print(f"🧠 LLM extracted: {validated}")
-        return validated
-
-    except json.JSONDecodeError as e:
-        print(f"❌ Groq response parse error: {e}")
-        return []
-    except Exception as e:
-        print(f"❌ Groq unexpected error: {e}")
-        return []
+    return validated    

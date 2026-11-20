@@ -87,7 +87,7 @@ async def predict_disease(request: PredictRequest):
 # ── GET /health ─────────────────────────────────────────────────────────────
 @router.get("/health", response_model=HealthResponse)
 def health():
-    """Service health check — confirms model is loaded."""
+    model, label_encoder, symptom_columns = load_artifacts()
     return HealthResponse(
         status="ok",
         model_loaded=True,

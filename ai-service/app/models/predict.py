@@ -12,7 +12,6 @@ filtered through the clinical plausibility layer.
 import joblib
 import numpy as np
 
-from app.config import MODEL_PATH, LABEL_ENCODER_PATH, SYMPTOM_COLUMNS_PATH
 from app.models.preprocessing import encode_symptoms
 from app.utils.helpers import get_disease_description
 from app.services.risk_rules import apply_all_rules
@@ -44,9 +43,7 @@ def load_artifacts():
         )
 
     model = joblib.load(paths["model.pkl"])
-    label_encoder = joblib.load(paths["label_encoder.pkl"])
-    symptom_columns = joblib.load(paths["symptom_columns.pkl"])
-
+    
     return model, label_encoder, symptom_columns
 label_encoder   = joblib.load(LABEL_ENCODER_PATH)
 symptom_columns = joblib.load(SYMPTOM_COLUMNS_PATH)
