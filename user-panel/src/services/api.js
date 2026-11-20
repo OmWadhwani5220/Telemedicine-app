@@ -177,6 +177,6 @@ export const checkSymptoms = async (payload) => {
     return res.json();
   } catch (err) {
     console.error("checkSymptoms error:", err);
-    return { detail: "Could not reach the AI service. Make sure it is running on port 8001." };
+    return { detail: "Could not reach the AI service. Make sure it is running ." };
   }
 };

@@ -55,12 +55,46 @@ const isProfileComplete = (patient) => {
   return !!(patient.name && patient.dob && patient.gender && patient.bloodGroup);
 };
 
+const SCREEN_PATHS = {
+  dashboard: "/dashboard",
+  symptoms: "/symptom-checker",
+  appointments: "/appointments",
+  video: "/video-consultation",
+  records: "/medical-records",
+  recordDetails: "/medical-records/details",
+  prescriptions: "/prescriptions",
+  messages: "/messages",
+  settings: "/settings",
+};
+
+const getScreenFromPath = () => {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+
+  return (
+    Object.keys(SCREEN_PATHS).find(
+      (screen) => SCREEN_PATHS[screen] === path
+    ) || "dashboard"
+  );
+};
+
 export default function App() {
-  const [currentScreen,  setCurrentScreen]  = useState("dashboard");
+  const [currentScreen, setCurrentScreen] = useState(getScreenFromPath);
   const [patientName,    setPatientName]    = useState("Patient");
   const [ready,          setReady]          = useState(false);
   const [profileComplete,setProfileComplete]= useState(null); // null = not checked yet
   const [selectedRecord, setSelectedRecord] = useState(null);
+
+  useEffect(() => {
+  const handlePopState = () => {
+    setCurrentScreen(getScreenFromPath());
+  };
+
+  window.addEventListener("popstate", handlePopState);
+
+  return () => {
+    window.removeEventListener("popstate", handlePopState);
+  };
+}, []);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -119,11 +153,18 @@ export default function App() {
     window.location.href = LOGIN_URL;
   };
 
-  const handleNavigate = (screen, data = null) => {
-    if (data?.selectedRecord) setSelectedRecord(data.selectedRecord);
-    setCurrentScreen(screen);
-    window.scrollTo(0, 0);
-  };
+ const handleNavigate = (screen, data = null) => {
+  if (data?.selectedRecord) {
+    setSelectedRecord(data.selectedRecord);
+  }
+
+  const path = SCREEN_PATHS[screen] || "/dashboard";
+
+  window.history.pushState({ screen }, "", path);
+
+  setCurrentScreen(screen);
+  window.scrollTo(0, 0);
+};
 
   if (!ready) return (
     <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"#0F172A", gap:16 }}>
