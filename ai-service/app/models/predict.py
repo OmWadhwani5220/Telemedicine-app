@@ -8,8 +8,9 @@ builds the feature vector, runs the ensemble model,
 and returns top-N predictions with confidence scores,
 filtered through the clinical plausibility layer.
 """
-
+import os
 import joblib
+from huggingface_hub import hf_hub_download
 import numpy as np
 
 from app.config import MODEL_PATH, LABEL_ENCODER_PATH, SYMPTOM_COLUMNS_PATH
@@ -18,9 +19,16 @@ from app.utils.helpers import get_disease_description
 from app.services.risk_rules import apply_all_rules
 
 # ── Load artifacts once at startup ─────────────────────────────────────────
-model           = joblib.load(MODEL_PATH)
-label_encoder   = joblib.load(LABEL_ENCODER_PATH)
-symptom_columns = joblib.load(SYMPTOM_COLUMNS_PATH)
+HF_MODEL_REPO = os.environ["HF_MODEL_REPO"]
+HF_TOKEN = os.getenv("HF_TOKEN")
+
+MODEL_PATH = hf_hub_download(
+    repo_id=HF_MODEL_REPO,
+    filename="model.pkl",
+    token=HF_TOKEN
+)
+
+model = joblib.load(MODEL_PATH)
 
 
 def predict(

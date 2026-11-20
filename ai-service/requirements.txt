@@ -10,3 +10,5 @@ python-dotenv
 httpx
 pydantic
 groq
+huggingface_hub
+
