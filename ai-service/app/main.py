@@ -23,7 +23,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://telemed-user-panel.vercel.app"
+        "https://telemed-user-panel.vercel.app/symptom-checker"
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
