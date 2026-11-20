@@ -155,7 +155,7 @@ export const getAvailableSlots = async (doctorId, date) => {
    Calls the FastAPI ai-service directly on port 8001.
    No auth header needed — it's an internal service.
 ───────────────────────────────────────── */
-const AI_SERVICE_URL = "http://localhost:8001";
+const AI_SERVICE_URL = "https://telemed-ai-service.onrender.com";
 
 export const checkSymptoms = async (payload) => {
   try {
