@@ -1,54 +1,87 @@
-"""
-symptom_mapper.py
-─────────────────
-Bridges between the LLM layer and the ML model.
 
-The LLM returns symptom names. This module:
-1. Validates them against the model's vocabulary
-2. Handles edge cases (partial matches, near-duplicates)
-3. Returns the final clean list ready for encoding
+"""
+Maps extracted symptoms to the trained model vocabulary.
+Preserves the exact feature names expected by the model.
 """
 
+import re
 import joblib
 from app.config import SYMPTOM_COLUMNS_PATH
 
-# Load once at startup
-_symptom_columns: list[str] = joblib.load(SYMPTOM_COLUMNS_PATH)
-_symptom_set = set(_symptom_columns)
+# Load the trained model's symptom vocabulary
+_symptom_columns = list(joblib.load(SYMPTOM_COLUMNS_PATH))
+
+
+def normalize_symptom(value: str) -> str:
+    """Normalize formatting for symptom matching."""
+    value = str(value).strip().lower()
+    value = value.replace("_", " ").replace("-", " ")
+    value = re.sub(r"\s+", " ", value)
+    return value.strip()
+
+
+# Map normalized names to original model feature names
+_symptom_lookup = {
+    normalize_symptom(column): column
+    for column in _symptom_columns
+}
+
+# Add aliases only when the dataset feature is equivalent.
+SYMPTOM_ALIASES = {
+    "irregular periods": "irregular menstruation",
+    "painful periods": "menstrual cramps",
+    "tiredness": "fatigue",
+    "feeling weak": "weakness",
+}
 
 
 def validate_and_map(raw_symptoms: list[str]) -> list[str]:
     """
-    Take a raw list of symptom strings (from LLM or direct input),
-    clean them, and return only those that exist in the model vocabulary.
-
-    Args:
-        raw_symptoms: list of symptom strings
-
-    Returns:
-        Filtered list of valid symptom strings
+    Convert extracted symptoms into valid model feature names.
     """
+
+    if not isinstance(raw_symptoms, list):
+        return []
+
     valid = []
-    seen  = set()
+    seen = set()
 
     for symptom in raw_symptoms:
-        # Normalise: lowercase, strip whitespace
-        cleaned = symptom.strip().lower()
-
-        # Skip duplicates
-        if cleaned in seen:
+        if not isinstance(symptom, str):
             continue
-        seen.add(cleaned)
 
-        # Keep only symptoms in the trained model's vocabulary
-        if cleaned in _symptom_set:
-            valid.append(cleaned)
-        else:
-            print(f"⚠️  Symptom not in vocabulary, skipping: '{cleaned}'")
+        cleaned = normalize_symptom(symptom)
+
+        # First attempt an exact normalized match
+        matched = _symptom_lookup.get(cleaned)
+
+        # Then attempt a known synonym
+        if matched is None:
+            alias = SYMPTOM_ALIASES.get(cleaned)
+            if alias:
+                matched = _symptom_lookup.get(
+                    normalize_symptom(alias)
+                )
+
+        if matched is None:
+            print(
+                f"Unmatched symptom label: {cleaned}",
+                flush=True
+            )
+            continue
+
+        if matched not in seen:
+            valid.append(matched)
+            seen.add(matched)
+
+    print(
+        f"Symptom mapping: {len(raw_symptoms)} extracted, "
+        f"{len(valid)} matched",
+        flush=True
+    )
 
     return valid
 
 
 def get_all_valid_symptoms() -> list[str]:
-    """Return the full list of symptoms the model understands."""
     return _symptom_columns

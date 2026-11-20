@@ -41,8 +41,17 @@ async def predict_disease(request: PredictRequest):
     # ── Step 1: LLM symptom extraction ────────────────────────────────────
     raw_symptoms = extract_symptoms_from_text(request.symptom_text)
 
-    # ── Step 2: Validate against model vocabulary ──────────────────────────
-    validated_symptoms = validate_and_map(raw_symptoms)
+print(
+    f"Groq extracted {len(raw_symptoms)} symptoms",
+    flush=True
+)
+
+validated_symptoms = validate_and_map(raw_symptoms)
+
+print(
+    f"Vocabulary matched {len(validated_symptoms)} symptoms",
+    flush=True
+)
 
     if not validated_symptoms:
         raise HTTPException(
