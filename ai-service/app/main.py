@@ -26,6 +26,7 @@ ALLOWED_ORIGINS = [
     # Render Services
     "https://telemedicine-app-mr3o.onrender.com",
     "https://telemed-video-server.onrender.com",
+    "htt://telemed-ai-service.onrender.com",
 
     # Local Development
     "http://localhost:5173",
@@ -66,3 +67,13 @@ def cors_check():
             in ALLOWED_ORIGINS
         ),
     }
+
+@app.on_event("startup")
+def warm_up():
+    from app.models.predict import load_artifacts
+    load_artifacts()
+    print("✅ Model artifacts loaded")
+
+    @app.api_route("/", methods=["GET", "HEAD"])
+def root():
+    return {"service": "TeleMed AI Service", "status": "running", "version": "1.0.1"}

@@ -68,11 +68,15 @@ async def predict_disease(request: PredictRequest):
         "recent_travel":          request.recent_travel,
     }
 
-    result = predict(
-        symptoms=validated_symptoms,
-        patient_profile=patient_profile,
-        top_n=request.top_n,
-    )
+    try:
+        result = predict(
+            symptoms=validated_symptoms,
+            patient_profile=patient_profile,
+            top_n=request.top_n,
+        )
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {type(e).__name__}: {e}")
 
     # ── Step 6: Return response ────────────────────────────────────────────
     return PredictResponse(

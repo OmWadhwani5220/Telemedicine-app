@@ -168,7 +168,6 @@ Example output: ["nausea", "vomiting", "abdominal pain"]
 
 import re
 
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 def _keyword_fallback(text: str) -> list[str]:
     """Plain-English substring match, used when the LLM fails or returns nothing."""
@@ -187,7 +186,7 @@ def extract_symptoms_from_text(user_text: str) -> list[str]:
         try:
             client = Groq(api_key=api_key)
             resp = client.chat.completions.create(
-                model=GROQ_MODEL,
+                model="openai/gpt-oss-120b",
                 temperature=0.0,
                 max_tokens=512,
                 messages=[
