@@ -19,6 +19,20 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Allow TeleMed User Panel to access the AI service
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://telemed-user-panel.vercel.app"
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+)
+
+# Keep your existing router registration
+app.include_router(router)
+
 # Allow calls from all frontend panels during development
 app.add_middleware(
     CORSMiddleware,
