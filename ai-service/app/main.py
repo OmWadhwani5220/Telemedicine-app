@@ -1,37 +1,49 @@
+
 """
-main.py
-───────
-FastAPI application entry point.
-Run with: uvicorn app.main:app --port 8001 --reload
+TeleMed AI Service - FastAPI Entry Point
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.api.routes import router
 
+
 app = FastAPI(
-    title="AI Symptom Predictor — Telemedicine",
-    description=(
-        "Multilingual AI-powered symptom analysis service. "
-        "Accepts free-text symptom descriptions in any language, "
-        "extracts symptoms via Groq LLM, and predicts diseases using a trained ML ensemble."
-    ),
+    title="TeleMed AI Symptom Predictor",
+    description="AI-powered symptom analysis service",
     version="1.0.0",
 )
 
-# Allow calls from all frontend panels during development
+
+ALLOWED_ORIGINS = [
+    "https://telemed-user-panel.vercel.app",
+    "https://telemedicine-app-six-beryl.vercel.app",
+    "https://telemed-doctor-panel.vercel.app",
+    "https://telemed-admin-panel.vercel.app",
+    "https://telemedicine-app-mr3o.onrender.com",
+    "https://telemed-video-server.onrender.com",
+]
+
+
+# Apply CORS as the outermost ASGI middleware.
+# This also adds CORS headers to error responses
+# generated inside the application.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://telemedicine-app-mr3o.onrender.com",   # backend
-        "https://telemed-video-server.onrender.com",   # signaling server
-        "https://telemedicine-app-six-beryl.vercel.app/",   # before-login / login page
-        "https://telemed-user-panel.vercel.app/",   # user panel
-        "https://telemed-doctor-panel.vercel.app/",   # doctor panel (in case)
-        "https://telemed-admin-panel.vercel.app/",   # admin panel (in case)
-    ],
-    allow_methods=["POST", "GET", "OPTIONS"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
+
 app.include_router(router)
+
+
+@app.get("/")
+def root():
+    return {
+        "service": "TeleMed AI Service",
+        "status": "running",
+    }
