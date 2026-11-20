@@ -5,7 +5,7 @@ TeleMed AI Service - FastAPI Entry Point
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi import HTTPException
 from app.api.routes import router
 
 
@@ -67,3 +67,24 @@ def cors_check():
             in ALLOWED_ORIGINS
         ),
     }
+
+@app.get("/model-check")
+def model_check():
+    from app.models.predict import load_artifacts
+
+    try:
+        model, encoder, columns = load_artifacts()
+
+        return {
+            "status": "loaded",
+            "model_type": type(model).__name__,
+            "disease_count": len(encoder.classes_),
+            "symptom_count": len(columns),
+        }
+    except Exception:
+        import logging
+        logging.exception("Model loading failed")
+        raise HTTPException(
+            status_code=503,
+            detail="Model loading failed. Check Render logs."
+        )
