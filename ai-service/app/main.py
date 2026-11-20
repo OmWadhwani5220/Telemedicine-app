@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 
 
+# Initialize FastAPI
 app = FastAPI(
     title="TeleMed AI Symptom Predictor",
     description="AI-powered symptom analysis service",
@@ -16,19 +17,14 @@ app = FastAPI(
 )
 
 
+# Allowed frontend origins
 ALLOWED_ORIGINS = [
-    # Vercel Frontends
     "https://telemed-user-panel.vercel.app",
     "https://telemedicine-app-six-beryl.vercel.app",
     "https://telemed-doctor-panel.vercel.app",
     "https://telemed-admin-panel.vercel.app",
-
-    # Render Services
     "https://telemedicine-app-mr3o.onrender.com",
     "https://telemed-video-server.onrender.com",
-    "htt://telemed-ai-service.onrender.com",
-
-    # Local Development
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175",
@@ -37,6 +33,7 @@ ALLOWED_ORIGINS = [
 ]
 
 
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -46,9 +43,11 @@ app.add_middleware(
 )
 
 
+# Register API routes
 app.include_router(router)
 
 
+# Root endpoint
 @app.get("/")
 def root():
     return {
@@ -58,6 +57,7 @@ def root():
     }
 
 
+# CORS verification endpoint
 @app.get("/cors-check")
 def cors_check():
     return {
@@ -67,13 +67,3 @@ def cors_check():
             in ALLOWED_ORIGINS
         ),
     }
-
-@app.on_event("startup")
-def warm_up():
-    from app.models.predict import load_artifacts
-    load_artifacts()
-    print("✅ Model artifacts loaded")
-
-    @app.api_route("/", methods=["GET", "HEAD"])
-def root():
-    return {"service": "TeleMed AI Service", "status": "running", "version": "1.0.1"}
