@@ -87,12 +87,14 @@ async def predict_disease(request: PredictRequest):
 # ── GET /health ─────────────────────────────────────────────────────────────
 @router.get("/health", response_model=HealthResponse)
 def health():
-    """Service health check — confirms model is loaded."""
+    """
+    Basic API health check without loading the ML model.
+    """
     return HealthResponse(
         status="ok",
-        model_loaded=True,
-        symptom_count=len(symptom_columns),
-        disease_count=len(label_encoder.classes_),
+        model_loaded=False,
+        symptom_count=0,
+        disease_count=0,
     )
 
 

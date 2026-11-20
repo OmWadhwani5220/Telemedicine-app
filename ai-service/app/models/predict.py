@@ -50,31 +50,22 @@ def load_artifacts():
 
 
 def predict(
-    model, label_encoder, symptom_columns = load_artifacts()
     symptoms: list[str],
     patient_profile: dict = None,
     top_n: int = 3,
 ) -> dict:
     """
-    Run a prediction given a list of validated symptom names.
-
-    Args:
-        symptoms:        List of symptom strings (already validated against vocabulary)
-        patient_profile: Dict of patient fields (age, gender, bmi, etc.)
-        top_n:           Number of top predictions to return
-
-    Returns:
-        Dict with:
-          predictions      — ranked list of clinically filtered disease predictions
-          symptoms_matched — the symptoms that fed the model
-          red_flags        — any red-flag symptoms detected
-          filter_notes     — what was removed and why (for transparency)
+    Run disease prediction using the trained ML model.
     """
+
+    model, label_encoder, symptom_columns = load_artifacts()
+
     if patient_profile is None:
         patient_profile = {}
 
-    # ── Build feature vector ───────────────────────────────────────────────
+    # Build feature vector
     encoded = np.array([encode_symptoms(symptoms, symptom_columns)])
+
 
     # ── Run model — fetch more than top_n so filtering has room to work ────
     fetch_n     = min(top_n * 3, len(label_encoder.classes_))
