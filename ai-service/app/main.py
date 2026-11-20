@@ -23,11 +23,11 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://telemed-user-panel.vercel.app/symptom-checker"
+        "https://telemed-user-panel.vercel.app"
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["*"],
 )
 
 # Keep your existing router registration
